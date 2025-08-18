@@ -1,0 +1,46 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Navbar from './components/Navbar';
+
+// Páginas
+import Home from './pages/Home';
+import Calendario from './pages/Calendario';
+import Equipos from './pages/Equipos';
+import Jugadores from './pages/Jugadores';
+import Standings from './pages/Standings';
+import Login from './pages/Login';
+import Admin from './pages/Admin';
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/calendario" element={<Calendario />} />
+              <Route path="/equipos" element={<Equipos />} />
+              <Route path="/jugadores" element={<Jugadores />} />
+              <Route path="/standings" element={<Standings />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/admin" element={<Admin />} />
+              {/* Rutas adicionales para detalles */}
+              {/* <Route path="/equipo/:id" element={<DetalleEquipo />} /> */}
+              {/* <Route path="/jugador/:id" element={<DetalleJugador />} /> */}
+              {/* <Route path="/partido/:id" element={<DetallePartido />} /> */}
+            </Routes>
+          </main>
+          <footer className="bg-blue-800 text-white py-4">
+            <div className="container mx-auto px-4 text-center">
+              <p>© {new Date().getFullYear()} Torneo de Baloncesto entre Iglesias</p>
+            </div>
+          </footer>
+        </div>
+      </AuthProvider>
+    </Router>
+  )
+}
+
+export default App
