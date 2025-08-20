@@ -78,11 +78,15 @@ Aplicación web para gestionar estadísticas de un torneo de baloncesto entre ig
 ### Netlify
 
 1. Conectar el repositorio a Netlify
-2. Configurar las variables de entorno en Netlify:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+2. **IMPORTANTE**: Configurar las variables de entorno en Netlify (NO en el código):
+   - Ve a Site settings > Environment variables en tu dashboard de Netlify
+   - Agrega las siguientes variables:
+     - `VITE_SUPABASE_URL`: Tu URL de Supabase
+     - `VITE_SUPABASE_ANON_KEY`: Tu clave anónima de Supabase
 3. Configurar el comando de build: `npm run build`
 4. Configurar el directorio de publicación: `dist`
+
+**Nota de seguridad**: Nunca subas el archivo `.env` al repositorio. Las variables de entorno deben configurarse directamente en Netlify para mantener la seguridad.
 
 ## Acceso de administrador
 
