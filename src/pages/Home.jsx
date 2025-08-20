@@ -1,10 +1,55 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase/supabaseClient';
 
 const Home = () => {
+  const [upcomingGames, setUpcomingGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUpcomingGames();
+  }, []);
+
+  const fetchUpcomingGames = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('games')
+        .select(`
+          id,
+          date,
+          status,
+          score_team_a,
+          score_team_b,
+          team_a:team_a_id(id, team_name, logo_url),
+          team_b:team_b_id(id, team_name, logo_url)
+        `)
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+
+      // Filtrar próximos partidos
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const upcoming = data
+        .filter(game => {
+          const gameDate = new Date(game.date + 'T00:00:00');
+          return (gameDate >= today && (game.status === 'pending' || game.status === 'in_progress'));
+        })
+        .slice(0, 2);
+
+      setUpcomingGames(upcoming);
+    } catch (error) {
+      console.error('Error fetching upcoming games:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-blue-800 mb-4">Torneo de Baloncesto entre Iglesias</h1>
+        <h1 className="text-4xl font-bold text-blue-800 mb-4">Torneo de Baloncesto entre Iglesias Adventistas de Santiago</h1>
         <p className="text-xl text-gray-600">Estadísticas, calendario y más información sobre el torneo</p>
       </div>
 
@@ -30,28 +75,87 @@ const Home = () => {
         </Link>
       </div>
 
-      <div className="mt-12 bg-blue-50 rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-blue-800 mb-4">Próximos Partidos</h2>
-        <div className="space-y-4">
-          {/* Estos serían datos de ejemplo que vendrían de Supabase */}
-          <div className="bg-white p-4 rounded shadow">
-            <div className="flex justify-between items-center">
-              <div className="font-semibold">Iglesia Emanuel</div>
-              <div className="text-gray-500">vs</div>
-              <div className="font-semibold">Iglesia Bethel</div>
-            </div>
-            <div className="text-center text-sm text-gray-500 mt-2">Domingo, 30 de Agosto - 15:00</div>
+      {/* Sección de próximos partidos */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-blue-800 mb-6">Próximos Partidos</h2>
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Cargando próximos partidos...</p>
           </div>
-          
-          <div className="bg-white p-4 rounded shadow">
-            <div className="flex justify-between items-center">
-              <div className="font-semibold">Iglesia Nueva Vida</div>
-              <div className="text-gray-500">vs</div>
-              <div className="font-semibold">Iglesia Luz del Mundo</div>
-            </div>
-            <div className="text-center text-sm text-gray-500 mt-2">Sábado, 5 de Septiembre - 16:30</div>
+        ) : upcomingGames.length > 0 ? (
+          <div className="grid md:grid-cols-2 gap-6">
+            {upcomingGames.map(game => (
+              <Link 
+                to={`/partido/${game.id}`} 
+                key={game.id}
+                className="block bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+              >
+                <div className="p-6 text-white">
+                  <div className="text-center mb-4">
+                    <div className="text-sm opacity-90">
+                      {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long'
+                      })}
+                    </div>
+                    {game.status === 'in_progress' && (
+                      <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mt-2 inline-block animate-pulse">
+                        🔴 EN VIVO
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <div className="text-center flex-1">
+                      {game.team_a.logo_url ? (
+                        <img 
+                          src={game.team_a.logo_url} 
+                          alt={game.team_a.team_name} 
+                          className="w-16 h-16 object-contain mx-auto mb-2"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <span className="text-lg font-bold">{game.team_a.team_name.substring(0, 2)}</span>
+                        </div>
+                      )}
+                      <div className="font-semibold text-sm">{game.team_a.team_name}</div>
+                    </div>
+                    
+                    <div className="text-center px-4">
+                      {game.status === 'in_progress' ? (
+                        <div className="text-2xl font-bold">
+                          {game.score_team_a} - {game.score_team_b}
+                        </div>
+                      ) : (
+                        <div className="text-xl font-bold opacity-75">VS</div>
+                      )}
+                    </div>
+                    
+                    <div className="text-center flex-1">
+                      {game.team_b.logo_url ? (
+                        <img 
+                          src={game.team_b.logo_url} 
+                          alt={game.team_b.team_name} 
+                          className="w-16 h-16 object-contain mx-auto mb-2"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <span className="text-lg font-bold">{game.team_b.team_name.substring(0, 2)}</span>
+                        </div>
+                      )}
+                      <div className="font-semibold text-sm">{game.team_b.team_name}</div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-8 bg-gray-50 rounded-lg">
+            <p className="text-gray-500">No hay próximos partidos programados</p>
+          </div>
+        )}
       </div>
     </div>
   );

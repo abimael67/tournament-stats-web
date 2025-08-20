@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase/supabaseClient';
+import { getPositionName } from '../utils';
 
 const Jugadores = () => {
   const [players, setPlayers] = useState([]);
@@ -24,6 +25,7 @@ const Jugadores = () => {
             jersey_number,
             role,
             profile_pic_url,
+            position,
             team:team_id(id, team_name, church_name)
           `)
           .eq('role', 'player')
@@ -123,8 +125,8 @@ const Jugadores = () => {
                   </div>
                 </div>
                 
-                {player.age && (
-                  <p className="text-sm text-gray-500 mt-2">Edad: {player.age} años</p>
+                {player.position && (
+                  <p className="text-sm text-gray-500 mt-2">{getPositionName(player.position)}</p>
                 )}
               </div>
               
