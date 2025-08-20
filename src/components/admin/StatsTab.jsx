@@ -12,6 +12,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
     assists: editingStat?.assists || 0,
     technical_fouls: editingStat?.technical_fouls || 0,
     fouls: editingStat?.fouls || 0,
+    steals: editingStat?.steals || 0,
     field_goal_attempts: editingStat?.field_goal_attempts || 0,
     field_goal_made: editingStat?.field_goal_made || 0,
     three_point_attempts: editingStat?.three_point_attempts || 0,
@@ -68,6 +69,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         points: editingStat.points || 0,
         rebounds: editingStat.rebounds || 0,
         assists: editingStat.assists || 0,
+        steals: editingStat.steals || 0,
         technical_fouls: editingStat.technical_fouls || 0,
         fouls: editingStat.fouls || 0,
         field_goal_attempts: editingStat.field_goal_attempts || 0,
@@ -83,6 +85,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         points: 0,
         rebounds: 0,
         assists: 0,
+        steals: 0,
         technical_fouls: 0,
         fouls: 0,
         field_goal_attempts: 0,
@@ -108,6 +111,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
           points: formData.points,
           rebounds: formData.rebounds,
           assists: formData.assists,
+          steals: formData.steals,
           technical_fouls: formData.technical_fouls,
           fouls: formData.fouls,
           field_goal_attempts: formData.field_goal_attempts,
@@ -156,6 +160,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         points: 0,
         rebounds: 0,
         assists: 0,
+        steals: 0,
         technical_fouls: 0,
         fouls: 0,
         field_goal_attempts: 0,
@@ -207,7 +212,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         </select>
       </div>
       
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-4 gap-4 mb-4">
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="points">
             Puntos
@@ -248,6 +253,19 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+          <div>
+          <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="steals">
+            Robos
+          </label>
+          <input
+            id="steals"
+            type="number"
+            min="0"
+            value={formData.steals}
+            onChange={(e) => setFormData({...formData, steals: parseInt(e.target.value) || 0})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
       </div>
        <div className="grid grid-cols-4 gap-4 mb-4">
         <div>
@@ -266,7 +284,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="field_goal_made">
-            2P Marcadas
+            2P Anotados
           </label>
           <input
             id="field_goal_made"
@@ -292,7 +310,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         </div>
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="three_point_made">
-            3P Marcadas
+            3P Anotados
           </label>
           <input
             id="three_point_made"
@@ -452,6 +470,7 @@ const StatsTab = ({ handleAuthError }) => {
           assists,
           technical_fouls,
           fouls,
+          steals,
           field_goal_attempts,
           field_goal_made,
           three_point_attempts,
@@ -596,6 +615,7 @@ const StatsTab = ({ handleAuthError }) => {
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TL</th>
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PF</th>
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TF</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ST</th>
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                           </tr>
                         </thead>
@@ -626,6 +646,7 @@ const StatsTab = ({ handleAuthError }) => {
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.fouls}</td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.technical_fouls}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.steals}</td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                                   <button 
                                     onClick={() => handleEditStat(stat)}
@@ -685,6 +706,10 @@ const StatsTab = ({ handleAuthError }) => {
                                {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
                                  .reduce((sum, stat) => sum + (stat.technical_fouls || 0), 0)}
                              </td>
+                              <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.steals || 0), 0)}
+                             </td>
                              <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
                            </tr>
                          </tfoot>
@@ -708,6 +733,7 @@ const StatsTab = ({ handleAuthError }) => {
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TL</th>
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PF</th>
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TF</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ST</th>
                             <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                           </tr>
                         </thead>
@@ -738,6 +764,7 @@ const StatsTab = ({ handleAuthError }) => {
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.fouls}</td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.technical_fouls}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.steals}</td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                                   <button 
                                     onClick={() => handleEditStat(stat)}
@@ -796,6 +823,10 @@ const StatsTab = ({ handleAuthError }) => {
                              <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                                {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
                                  .reduce((sum, stat) => sum + (stat.technical_fouls || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.steals || 0), 0)}
                              </td>
                              <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
                            </tr>

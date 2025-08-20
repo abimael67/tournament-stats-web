@@ -36,7 +36,7 @@ function App() {
           </main>
           <footer className="bg-blue-800 text-white py-4">
             <div className="container mx-auto px-4 text-center">
-              <p>© {new Date().getFullYear()} Torneo de Baloncesto entre Iglesias Adventistas de la ADN</p>
+              <p>© {new Date().getFullYear()} Torneo de Baloncesto entre Iglesias Adventistas de Santiago</p>
             </div>
           </footer>
         </div>

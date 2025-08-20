@@ -19,6 +19,7 @@ const Calendario = () => {
             id,
             date,
             status,
+            place,
             score_team_a,
             score_team_b,
             team_a:team_a_id(id, team_name, logo_url),
@@ -47,18 +48,20 @@ const Calendario = () => {
   
   const upcomingGames = games
     .filter(game => {
-      const gameDate = new Date(game.date + 'T00:00:00');
+      const gameDate = new Date(game.date);
       return (gameDate >= today && (game.status === 'pending' || game.status === 'in_progress'));
     })
     .slice(0, 2);
 
   // Agrupar partidos por fecha
   const gamesByDate = games.reduce((acc, game) => {
-    const date = new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', {
+    const date = new Date(game.date).toLocaleTimeString('es-DO', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
     
     if (!acc[date]) {
@@ -101,11 +104,16 @@ const Calendario = () => {
                 <div className="p-6 text-white">
                   <div className="text-center mb-4">
                     <div className="text-sm opacity-90">
-                      {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                      {new Date(game.date).toLocaleTimeString('es-DO', {
                         weekday: 'long',
                         day: 'numeric',
-                        month: 'long'
+                        month: 'long',
+                        hour: '2-digit',
+                        minute: '2-digit'
                       })}
+                      <div className="text-xs opacity-75">
+                        {game.place}
+                      </div>
                     </div>
                     {game.status === 'in_progress' && (
                       <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mt-2 inline-block animate-pulse">
@@ -137,6 +145,7 @@ const Calendario = () => {
                         </div>
                       ) : (
                         <div className="text-xl font-bold opacity-75">VS</div>
+                        
                       )}
                     </div>
                     
@@ -205,6 +214,7 @@ const Calendario = () => {
                             </div>
                             {game.status === 'completed' && <div className="text-xs text-gray-500">Finalizado</div>}
                             {game.status === 'in_progress' && <div className="text-xs text-gray-500">Jugando ahora</div>}
+                            {game.status === 'pending' && <div className="text-xs text-gray-500">{game.place}</div>}
                           </div>
                         ) : (
                           <div className="text-center">

@@ -14,6 +14,7 @@ const GamesTab = ({ handleAuthError }) => {
     date: '',
     team_a_id: '',
     team_b_id: '',
+    place: '',
     status: 'pending',
     score_team_a: 0,
     score_team_b: 0
@@ -33,6 +34,7 @@ const GamesTab = ({ handleAuthError }) => {
           id,
           date,
           status,
+          place,
           score_team_a,
           score_team_b,
           team_a_id,
@@ -82,6 +84,7 @@ const GamesTab = ({ handleAuthError }) => {
       team_a_id: '',
       team_b_id: '',
       status: 'pending',
+      place: '',
       score_team_a: 0,
       score_team_b: 0
     });
@@ -97,6 +100,7 @@ const GamesTab = ({ handleAuthError }) => {
       team_a_id: game.team_a_id,
       team_b_id: game.team_b_id,
       status: game.status,
+      place: game.place,
       score_team_a: game.score_team_a || 0,
       score_team_b: game.score_team_b || 0
     });
@@ -162,6 +166,7 @@ const GamesTab = ({ handleAuthError }) => {
         team_a_id: formData.team_a_id,
         team_b_id: formData.team_b_id,
         status: formData.status,
+        place: formData.place,
         score_team_a: formData.status === 'completed' || formData.status === 'in_progress' ? parseInt(formData.score_team_a) : null,
         score_team_b: formData.status === 'completed' || formData.status === 'in_progress' ? parseInt(formData.score_team_b) : null,
         winner_team_id: winnerTeamId
@@ -194,6 +199,7 @@ const GamesTab = ({ handleAuthError }) => {
           score_team_b,
           team_a_id,
           team_b_id,
+          place,
           winner_team_id,
           team_a:team_a_id(id, team_name),
           team_b:team_b_id(id, team_name),
@@ -236,6 +242,7 @@ const GamesTab = ({ handleAuthError }) => {
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lugar</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipos</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resultado</th>
@@ -253,12 +260,15 @@ const GamesTab = ({ handleAuthError }) => {
               games.map(game => (
                 <tr key={game.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', { 
+                    {new Date(game.date).toLocaleTimeString('es-DO', { 
                       year: 'numeric', 
                       month: 'short', 
-                      day: 'numeric' 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
                     })}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{game.place}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {game.team_a.team_name} vs {game.team_b.team_name}
                   </td>
@@ -321,14 +331,30 @@ const GamesTab = ({ handleAuthError }) => {
                     Fecha *
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={formData.date}
                     onChange={(e) => setFormData({...formData, date: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
-                
+                  <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Lugar
+                  </label>
+                  <select
+                    value={formData.place}
+                    onChange={(e) => setFormData({...formData, place: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Seleccionar lugar</option>
+                   <option value="Techado del INVI">Techado del INVI</option>
+                   <option value="Club G.U.G.">Club G.U.G.</option>
+                   <option value="Techado Nani Marrero">Techado Nani Marrero</option>
+                  
+                 </select>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Equipo A *

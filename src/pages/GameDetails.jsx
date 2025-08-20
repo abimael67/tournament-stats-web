@@ -22,6 +22,7 @@ const GameDetails = () => {
             id,
             date,
             status,
+            place,
             score_team_a,
             score_team_b,
             winner_team_id,
@@ -46,6 +47,7 @@ const GameDetails = () => {
             assists,
             technical_fouls,
             fouls,
+            steals,
             field_goal_attempts,
             field_goal_made,
             three_point_attempts,
@@ -59,7 +61,10 @@ const GameDetails = () => {
               team_id
             )
           `)
-          .eq('game_id', id);
+          .eq('game_id', id)
+          .order('points', { ascending: false })
+          .order('rebounds', { ascending: false })
+          .order('assists', { ascending: false });  
 
         if (statsError) throw statsError;
 
@@ -174,6 +179,9 @@ const GameDetails = () => {
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   TL%
                 </th>
+               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ROBOS
+                </th> 
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   FALTAS
                 </th>
@@ -230,6 +238,9 @@ const GameDetails = () => {
                       <div className="text-xs text-gray-500">
                         {calculateFieldGoalPercentage(stat.free_throw_made, stat.free_throw_attempts)}%
                       </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                      {stat.steals}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900">
                       {stat.fouls}
@@ -316,13 +327,18 @@ const GameDetails = () => {
               Detalles del Partido
             </h1>
             <p className="text-gray-600 mb-6">
-              {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', {
+              {new Date(game.date).toLocaleTimeString('es-DO', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric'
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
               })}
+              <br />
+              {game.place}
             </p>
+            
             
             {/* Marcador */}
             <div className="flex items-center justify-center space-x-8">

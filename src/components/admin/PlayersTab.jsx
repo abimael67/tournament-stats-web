@@ -290,7 +290,7 @@ const PlayersTab = ({ handleAuthError }) => {
                     {player.team?.team_name || 'Sin equipo'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {player.jersey_number || '-'}
+                    {player.jersey_number || '0'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
                     {player.role === 'player' ? 'Jugador' : player.role === 'coach' ? 'Entrenador' : 'Asistente'}
@@ -376,7 +376,7 @@ const PlayersTab = ({ handleAuthError }) => {
                     value={formData.jersey_number}
                     onChange={(e) => setFormData({...formData, jersey_number: e.target.value})}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    min="1"
+                    min="0"
                     max="99"
                   />
                 </div>

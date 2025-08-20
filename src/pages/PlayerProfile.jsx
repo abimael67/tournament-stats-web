@@ -68,6 +68,7 @@ const PlayerProfile = () => {
           assists,
           technical_fouls,
           fouls,
+          steals,
           field_goal_made,
           field_goal_attempts,
           three_point_made,
