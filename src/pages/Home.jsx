@@ -18,6 +18,7 @@ const Home = () => {
           id,
           date,
           status,
+          place,
           score_team_a,
           score_team_b,
           team_a:team_a_id(id, team_name, logo_url),
@@ -33,7 +34,7 @@ const Home = () => {
       
       const upcoming = data
         .filter(game => {
-          const gameDate = new Date(game.date + 'T00:00:00');
+          const gameDate = new Date(game.date);
           return (gameDate >= today && (game.status === 'pending' || game.status === 'in_progress'));
         })
         .slice(0, 2);
@@ -51,7 +52,7 @@ const Home = () => {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-blue-800 mb-4">Torneo de Baloncesto entre Iglesias Adventistas de Santiago</h1>
         <p className="text-xl text-gray-600">Estadísticas, calendario y más información sobre el torneo</p>
-                <p className="text-xl text-gray-600">Torneo benefico organizado por la Iglesia Adventista del Séptimo Día "Libertad"</p>
+                <p className="text-sm text-gray-600">Torneo benefico organizado por la Iglesia Adventista del Séptimo Día "Libertad"</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -94,11 +95,16 @@ const Home = () => {
                 <div className="p-6 text-white">
                   <div className="text-center mb-4">
                     <div className="text-sm opacity-90">
-                      {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                      {new Date(game.date).toLocaleTimeString('es-DO', {
                         weekday: 'long',
                         day: 'numeric',
-                        month: 'long'
+                        month: 'long',
+                        hour: '2-digit',
+                        minute: '2-digit'
                       })}
+                    </div>
+                    <div className="text-sm opacity-90">
+                      {game.place}
                     </div>
                     {game.status === 'in_progress' && (
                       <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mt-2 inline-block animate-pulse">

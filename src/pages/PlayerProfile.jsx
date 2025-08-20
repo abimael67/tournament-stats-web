@@ -58,6 +58,36 @@ const PlayerProfile = () => {
 
   const fetchPlayerStatistics = async () => {
     try {
+      // Primero obtener los IDs de juegos completados o en progreso
+      const { data: gamesData, error: gamesError } = await supabase
+        .from('games')
+        .select('id')
+        .in('status', ['completed', 'in_progress']);
+
+      if (gamesError) throw gamesError;
+      
+      const gameIds = gamesData?.map(game => game.id) || [];
+      
+      if (gameIds.length === 0) {
+        setPlayerStats([]);
+        setAggregatedStats({
+          totalGames: 0,
+          totalPoints: 0,
+          totalRebounds: 0,
+          totalAssists: 0,
+          totalSteals: 0,
+          totalFouls: 0,
+          totalTechnicalFouls: 0,
+          fieldGoalPercentage: 0,
+          threePointPercentage: 0,
+          freeThrowPercentage: 0,
+          averagePoints: 0,
+          averageRebounds: 0,
+          averageAssists: 0
+        });
+        return;
+      }
+
       // Obtener estadísticas del jugador con información de partidos
       const { data: statsData, error: statsError } = await supabase
         .from('stats')
@@ -87,6 +117,7 @@ const PlayerProfile = () => {
           )
         `)
         .eq('member_id', id)
+        .in('game_id', gameIds)
         .order('game(date)', { ascending: false });
 
       if (statsError) throw statsError;
@@ -140,16 +171,16 @@ const PlayerProfile = () => {
   };
 
   const getOpponentTeam = (game, playerTeamId) => {
-    if (game.team_a.id === playerTeamId) {
+    if (game?.team_a.id === playerTeamId) {
       return game.team_b;
     }
-    return game.team_a;
+    return game?.team_a || {};
   };
 
   const getGameResult = (game, playerTeamId) => {
-    if (game.winner_team_id === playerTeamId) {
+    if (game?.winner_team_id === playerTeamId) {
       return 'Victoria';
-    } else if (game.winner_team_id === null) {
+    } else if (game?.winner_team_id === null) {
       return 'En curso';
     } else {
       return 'Derrota';
@@ -157,10 +188,10 @@ const PlayerProfile = () => {
   };
 
   const getGameScore = (game, playerTeamId) => {
-    if (game.team_a.id === playerTeamId) {
-      return `${game.score_team_a} - ${game.score_team_b}`;
+    if (game?.team_a.id === playerTeamId) {
+      return `${game?.score_team_a || 0} - ${game?.score_team_b || 0}`;
     }
-    return `${game.score_team_b} - ${game.score_team_a}`;
+    return `${game?.score_team_b || 0} - ${game?.score_team_a || 0}`;
   };
 
   if (loading) {
