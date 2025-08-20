@@ -60,13 +60,13 @@ const Equipos = () => {
                   />
                 ) : (
                   <div className="w-24 h-24 bg-blue-200 rounded-full flex items-center justify-center">
-                    <span className="text-2xl font-bold text-blue-800">{team.team_name.substring(0, 2)}</span>
+                    <span className="text-2xl font-bold text-blue-800" translate="no">{team.team_name.substring(0, 2)}</span>
                   </div>
                 )}
               </div>
               
               <div className="p-4">
-                <h2 className="text-xl font-bold text-blue-700">{team.team_name}</h2>
+                <h2 className="text-xl font-bold text-blue-700" translate="no">{team.team_name}</h2>
                 <p className="text-gray-600">{team.church_name}</p>
               </div>
             </Link>

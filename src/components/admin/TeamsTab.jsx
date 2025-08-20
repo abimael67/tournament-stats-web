@@ -204,12 +204,12 @@ const TeamsTab = ({ handleAuthError }) => {
                           />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-xs font-medium text-blue-800">{team.team_name.charAt(0)}</span>
+                            <span className="text-xs font-medium text-blue-800" translate="no">{team.team_name.charAt(0)}</span>
                           </div>
                         )}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{team.team_name}</div>
+                        <div className="text-sm font-medium text-gray-900" translate="no">{team.team_name}</div>
                       </div>
                     </div>
                   </td>

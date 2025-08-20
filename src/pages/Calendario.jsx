@@ -132,10 +132,10 @@ const Calendario = () => {
                         />
                       ) : (
                         <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <span className="text-lg font-bold">{game.team_a.team_name.substring(0, 2)}</span>
+                          <span className="text-lg font-bold" translate="no">{game.team_a.team_name.substring(0, 2)}</span>
                         </div>
                       )}
-                      <div className="font-semibold text-sm">{game.team_a.team_name}</div>
+                      <div className="font-semibold text-sm" translate="no">{game.team_a.team_name}</div>
                     </div>
                     
                     <div className="text-center px-4">
@@ -158,10 +158,10 @@ const Calendario = () => {
                         />
                       ) : (
                         <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <span className="text-lg font-bold">{game.team_b.team_name.substring(0, 2)}</span>
+                          <span className="text-lg font-bold" translate="no">{game.team_b.team_name.substring(0, 2)}</span>
                         </div>
                       )}
-                      <div className="font-semibold text-sm">{game.team_b.team_name}</div>
+                      <div className="font-semibold text-sm" translate="no">{game.team_b.team_name}</div>
                     </div>
                   </div>
                 </div>
@@ -201,10 +201,10 @@ const Calendario = () => {
                             />
                           ) : (
                             <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                              <span className="text-xs">{game.team_a.team_name.substring(0, 2)}</span>
+                              <span className="text-xs" translate="no">{game.team_a.team_name.substring(0, 2)}</span>
                             </div>
                           )}
-                          <span className="font-semibold">{game.team_a.team_name}</span>
+                          <span className="font-semibold" translate="no">{game.team_a.team_name}</span>
                         </div>
                         
                         {(game.status === 'completed' || game.status === 'in_progress') ? (
@@ -229,7 +229,7 @@ const Calendario = () => {
                         )}
                         
                         <div className="flex items-center space-x-3">
-                          <span className="font-semibold">{game.team_b.team_name}</span>
+                          <span className="font-semibold" translate="no">{game.team_b.team_name}</span>
                           {game.team_b.logo_url ? (
                             <img 
                               src={game.team_b.logo_url} 
@@ -238,7 +238,7 @@ const Calendario = () => {
                             />
                           ) : (
                             <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                              <span className="text-xs">{game.team_b.team_name.substring(0, 2)}</span>
+                              <span className="text-xs" translate="no">{game.team_b.team_name.substring(0, 2)}</span>
                             </div>
                           )}
                         </div>

@@ -123,10 +123,10 @@ const Home = () => {
                         />
                       ) : (
                         <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <span className="text-lg font-bold">{game.team_a.team_name.substring(0, 2)}</span>
+                          <span className="text-lg font-bold" translate="no">{game.team_a.team_name.substring(0, 2)}</span>
                         </div>
                       )}
-                      <div className="font-semibold text-sm">{game.team_a.team_name}</div>
+                      <div className="font-semibold text-sm" translate="no">{game.team_a.team_name}</div>
                     </div>
                     
                     <div className="text-center px-4">
@@ -148,10 +148,10 @@ const Home = () => {
                         />
                       ) : (
                         <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <span className="text-lg font-bold">{game.team_b.team_name.substring(0, 2)}</span>
+                          <span className="text-lg font-bold" translate="no">{game.team_b.team_name.substring(0, 2)}</span>
                         </div>
                       )}
-                      <div className="font-semibold text-sm">{game.team_b.team_name}</div>
+                      <div className="font-semibold text-sm" translate="no">{game.team_b.team_name}</div>
                     </div>
                   </div>
                 </div>

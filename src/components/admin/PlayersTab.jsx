@@ -277,17 +277,17 @@ const PlayersTab = ({ handleAuthError }) => {
                           />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-xs font-medium text-blue-800">{player.name.charAt(0)}</span>
+                            <span className="text-xs font-medium text-blue-800" translate="no">{player.name.charAt(0)}</span>
                           </div>
                         )}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{player.name}</div>
+                        <div className="text-sm font-medium text-gray-900" translate="no">{player.name}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {player.team?.team_name || 'Sin equipo'}
+                    <span translate="no">{player.team?.team_name || 'Sin equipo'}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {player.jersey_number || '0'}

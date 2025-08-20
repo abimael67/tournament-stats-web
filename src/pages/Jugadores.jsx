@@ -109,7 +109,7 @@ const Jugadores = () => {
                   />
                 ) : (
                   <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-3xl font-bold text-blue-800">{player.name.charAt(0)}</span>
+                    <span className="text-3xl font-bold text-blue-800" translate="no">{player.name.charAt(0)}</span>
                   </div>
                 )}
               </div>
@@ -117,8 +117,8 @@ const Jugadores = () => {
               <div className="p-4 flex-grow">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h2 className="text-xl font-bold text-blue-700">{player.name}</h2>
-                    <p className="text-gray-600">{player.team.team_name}</p>
+                    <h2 className="text-xl font-bold text-blue-700" translate="no">{player.name}</h2>
+                    <p className="text-gray-600" translate="no">{player.team.team_name}</p>
                   </div>
                   <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
                     {player.jersey_number}

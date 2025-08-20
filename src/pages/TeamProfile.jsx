@@ -211,7 +211,7 @@ const TeamProfile = () => {
               />
             ) : (
               <div className="w-32 h-32 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-4xl font-bold text-blue-800">
+                <span className="text-4xl font-bold text-blue-800" translate="no">
                   {team.team_name.substring(0, 2)}
                 </span>
               </div>
@@ -219,7 +219,7 @@ const TeamProfile = () => {
           </div>
           
           <div className="flex-grow text-center md:text-left">
-            <h1 className="text-4xl font-bold text-blue-800 mb-2">{team.team_name}</h1>
+            <h1 className="text-4xl font-bold text-blue-800 mb-2" translate="no">{team.team_name}</h1>
             <p className="text-xl text-gray-600 mb-4">{team.church_name}</p>
             
             {/* Información del cuerpo técnico */}
@@ -366,7 +366,7 @@ const TeamProfile = () => {
                   </div>
                   
                   <div className="flex-grow">
-                    <h3 className="font-semibold text-gray-800">{player.name}</h3>
+                    <h3 className="font-semibold text-gray-800" translate="no">{player.name}</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <span>#{player.jersey_number}</span>
                       {player.age && <span>• {player.age} años</span>}

@@ -117,12 +117,12 @@ const Standings = () => {
                         />
                       ) : (
                         <div className="w-full h-full bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-xl font-bold text-blue-800">{team.team_name.substring(0, 2)}</span>
+                          <span className="text-xl font-bold text-blue-800" translate="no">{team.team_name.substring(0, 2)}</span>
                         </div>
                       )}
                     </div>
                     <div className="text-center mt-2">
-                      <p className="font-bold">{team.team_name}</p>
+                      <p className="font-bold" translate="no">{team.team_name}</p>
                       <p className="text-sm text-gray-600">{team.wins}W - {team.losses}L</p>
                     </div>
                   </Link>
@@ -175,12 +175,12 @@ const Standings = () => {
                           />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-xs font-medium text-blue-800">{team.team_name.substring(0, 2)}</span>
+                            <span className="text-xs font-medium text-blue-800" translate="no">{team.team_name.substring(0, 2)}</span>
                           </div>
                         )}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{team.team_name}</div>
+                        <div className="text-sm font-medium text-gray-900" translate="no">{team.team_name}</div>
                       </div>
                     </Link>
                   </td>

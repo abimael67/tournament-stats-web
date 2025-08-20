@@ -241,7 +241,7 @@ const PlayerProfile = () => {
               />
             ) : (
               <div className="w-32 h-32 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-4xl font-bold text-blue-800">
+                <span className="text-4xl font-bold text-blue-800" translate="no">
                   {player.name.charAt(0)}
                 </span>
               </div>
@@ -250,7 +250,7 @@ const PlayerProfile = () => {
           
           <div className="flex-grow text-center md:text-left">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-              <h1 className="text-4xl font-bold text-blue-800">{player.name}</h1>
+              <h1 className="text-4xl font-bold text-blue-800" translate="no">{player.name}</h1>
               <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center font-bold text-xl mt-2 md:mt-0">
                 #{player.jersey_number}
               </div>
@@ -262,6 +262,7 @@ const PlayerProfile = () => {
                 <Link 
                   to={`/equipo/${player.team.id}`}
                   className="text-gray-700 hover:text-blue-600 transition-colors"
+                  translate="no"
                 >
                   {player.team.team_name}
                 </Link>
