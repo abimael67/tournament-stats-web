@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase/supabaseClient';
+import { getPositionName } from '../../utils';
 
 const PlayersTab = ({ handleAuthError }) => {
   const [players, setPlayers] = useState([]);
@@ -7,6 +8,7 @@ const PlayersTab = ({ handleAuthError }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState('');
   const [formData, setFormData] = useState({
     id: null,
     name: '',
@@ -14,7 +16,9 @@ const PlayersTab = ({ handleAuthError }) => {
     jersey_number: '',
     role: 'player',
     profile_pic_url: '',
-    team_id: ''
+    team_id: '',
+    inactive: false,
+    position: ''
   });
   const [formError, setFormError] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
@@ -36,6 +40,8 @@ const PlayersTab = ({ handleAuthError }) => {
             role,
             profile_pic_url,
             team_id,
+            inactive,
+            position,
             team:team_id(id, team_name)
           `)
           .order('name');
@@ -74,7 +80,9 @@ const PlayersTab = ({ handleAuthError }) => {
       jersey_number: '',
       role: 'player',
       profile_pic_url: '',
-      team_id: ''
+      team_id: '',
+      inactive: false,
+      position: ''
     });
     setIsEditing(false);
     setFormError(null);
@@ -89,7 +97,9 @@ const PlayersTab = ({ handleAuthError }) => {
       jersey_number: player.jersey_number || '',
       role: player.role,
       profile_pic_url: player.profile_pic_url || '',
-      team_id: player.team_id || ''
+      team_id: player.team_id || '',
+      inactive: player.inactive || false,
+      position: player.position
     });
     setIsEditing(true);
     setFormError(null);
@@ -120,6 +130,8 @@ const PlayersTab = ({ handleAuthError }) => {
     }
   };
 
+
+
   const handleSubmitPlayer = async (e) => {
     e.preventDefault();
     setFormError(null);
@@ -137,7 +149,9 @@ const PlayersTab = ({ handleAuthError }) => {
         jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : null,
         role: formData.role,
         profile_pic_url: formData.profile_pic_url || null,
-        team_id: formData.team_id || null
+        team_id: formData.team_id || null,
+        inactive: formData.inactive,
+        position: formData.position
       };
       
       if (isEditing) {
@@ -168,6 +182,8 @@ const PlayersTab = ({ handleAuthError }) => {
           role,
           profile_pic_url,
           team_id,
+          inactive,
+          position,
           team:team_id(id, team_name)
         `)
         .order('name');
@@ -187,6 +203,11 @@ const PlayersTab = ({ handleAuthError }) => {
     }
   };
 
+  // Filtrar jugadores por equipo seleccionado
+  const filteredPlayers = selectedTeamFilter 
+    ? players.filter(player => player.team_id === selectedTeamFilter)
+    : players;
+
   if (loading) return <div className="text-center py-10">Cargando jugadores...</div>;
   if (error) return <div className="text-center py-10 text-red-600">{error}</div>;
 
@@ -202,6 +223,26 @@ const PlayersTab = ({ handleAuthError }) => {
         </button>
       </div>
       
+      {/* Filtro de equipos */}
+      <div className="mb-6">
+        <label htmlFor="team-filter" className="block text-sm font-medium text-gray-700 mb-2">
+          Filtrar por equipo:
+        </label>
+        <select
+          id="team-filter"
+          value={selectedTeamFilter}
+          onChange={(e) => setSelectedTeamFilter(e.target.value)}
+          className="block w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Todos los equipos</option>
+          {teams.map(team => (
+            <option key={team.id} value={team.id}>
+              {team.team_name}
+            </option>
+          ))}
+        </select>
+      </div>
+      
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -211,18 +252,19 @@ const PlayersTab = ({ handleAuthError }) => {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edad</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posición</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {players.length === 0 ? (
+            {filteredPlayers.length === 0 ? (
               <tr>
                 <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                  No hay jugadores registrados
+                  {selectedTeamFilter ? 'No hay jugadores en este equipo' : 'No hay jugadores registrados'}
                 </td>
               </tr>
             ) : (
-              players.map(player => (
+              filteredPlayers.map(player => (
                 <tr key={player.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -255,6 +297,9 @@ const PlayersTab = ({ handleAuthError }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {player.age || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {getPositionName(player.position) || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button 
@@ -364,8 +409,26 @@ const PlayersTab = ({ handleAuthError }) => {
                     max="100"
                   />
                 </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Posición
+                  </label>
+                  <select 
+                   value={formData.position}
+                    onChange={(e) => setFormData({...formData, position: e.target.value})}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                 >
+                  <option value="">Sin posición</option>
+                  <option value="point_guard">Base</option>
+                  <option value="shooting_guard">Escolta</option>
+                  <option value="small_forward">Alero</option>
+                  <option value="power_forward">Alero de poder</option>
+                  <option value="center">Pívot</option>
+                 </select>
+                </div>
                 
-                <div className="mb-6">
+                <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
                     URL de Foto de Perfil
                   </label>
@@ -376,6 +439,23 @@ const PlayersTab = ({ handleAuthError }) => {
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="https://ejemplo.com/foto.jpg"
                   />
+                </div>
+                
+                <div className="mb-6">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.inactive}
+                      onChange={(e) => setFormData({...formData, inactive: e.target.checked})}
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="text-gray-700 text-sm font-bold">
+                      Jugador Inactivo
+                    </span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Marcar si el jugador no está disponible para jugar
+                  </p>
                 </div>
                 
                 <div className="flex items-center justify-between">

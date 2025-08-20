@@ -12,13 +12,13 @@ const Navbar = () => {
   return (
     <nav className="bg-blue-800 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">Torneo Iglesias</Link>
-        
-        <div className="flex space-x-6">
+        <Link to="/" className="text-xl font-bold">Torneo Inter-Iglesias 2025</Link>
+         <div className="flex space-x-6">
           <Link to="/calendario" className="hover:text-blue-200">Calendario</Link>
           <Link to="/equipos" className="hover:text-blue-200">Equipos</Link>
           <Link to="/jugadores" className="hover:text-blue-200">Jugadores</Link>
           <Link to="/standings" className="hover:text-blue-200">Standings</Link>
+          <Link to="/info" className="hover:text-blue-200">Info</Link>
         </div>
 
         <div>

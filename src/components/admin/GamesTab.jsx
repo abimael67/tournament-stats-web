@@ -162,8 +162,8 @@ const GamesTab = ({ handleAuthError }) => {
         team_a_id: formData.team_a_id,
         team_b_id: formData.team_b_id,
         status: formData.status,
-        score_team_a: formData.status === 'completed' ? parseInt(formData.score_team_a) : null,
-        score_team_b: formData.status === 'completed' ? parseInt(formData.score_team_b) : null,
+        score_team_a: formData.status === 'completed' || formData.status === 'in_progress' ? parseInt(formData.score_team_a) : null,
+        score_team_b: formData.status === 'completed' || formData.status === 'in_progress' ? parseInt(formData.score_team_b) : null,
         winner_team_id: winnerTeamId
       };
 
@@ -253,7 +253,7 @@ const GamesTab = ({ handleAuthError }) => {
               games.map(game => (
                 <tr key={game.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(game.date).toLocaleDateString('es-ES', { 
+                    {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', { 
                       year: 'numeric', 
                       month: 'short', 
                       day: 'numeric' 
@@ -274,7 +274,7 @@ const GamesTab = ({ handleAuthError }) => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {game.status === 'completed' ? 
+                    {(game.status === 'completed' || game.status === 'in_progress') ? 
                       `${game.score_team_a} - ${game.score_team_b}` : 
                       '-'
                     }
@@ -378,12 +378,12 @@ const GamesTab = ({ handleAuthError }) => {
                   </select>
                 </div>
                 
-                {formData.status === 'completed' && (
+                {(formData.status === 'completed' || formData.status === 'in_progress') && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Goles Equipo A
+                          Puntos {teams.find(t => t.id === formData.team_a_id)?.team_name}
                         </label>
                         <input
                           type="number"
@@ -395,7 +395,7 @@ const GamesTab = ({ handleAuthError }) => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Goles Equipo B
+                          Puntos {teams.find(t => t.id === formData.team_b_id)?.team_name}
                         </label>
                         <input
                           type="number"

@@ -11,6 +11,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
     rebounds: editingStat?.rebounds || 0,
     assists: editingStat?.assists || 0,
     technical_fouls: editingStat?.technical_fouls || 0,
+    fouls: editingStat?.fouls || 0,
     field_goal_attempts: editingStat?.field_goal_attempts || 0,
     field_goal_made: editingStat?.field_goal_made || 0,
     three_point_attempts: editingStat?.three_point_attempts || 0,
@@ -68,6 +69,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         rebounds: editingStat.rebounds || 0,
         assists: editingStat.assists || 0,
         technical_fouls: editingStat.technical_fouls || 0,
+        fouls: editingStat.fouls || 0,
         field_goal_attempts: editingStat.field_goal_attempts || 0,
         field_goal_made: editingStat.field_goal_made || 0,
         three_point_attempts: editingStat.three_point_attempts || 0,
@@ -82,6 +84,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         rebounds: 0,
         assists: 0,
         technical_fouls: 0,
+        fouls: 0,
         field_goal_attempts: 0,
         field_goal_made: 0,
         three_point_attempts: 0,
@@ -106,6 +109,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
           rebounds: formData.rebounds,
           assists: formData.assists,
           technical_fouls: formData.technical_fouls,
+          fouls: formData.fouls,
           field_goal_attempts: formData.field_goal_attempts,
           field_goal_made: formData.field_goal_made,
           three_point_attempts: formData.three_point_attempts,
@@ -153,6 +157,7 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
         rebounds: 0,
         assists: 0,
         technical_fouls: 0,
+        fouls: 0,
         field_goal_attempts: 0,
         field_goal_made: 0,
         three_point_attempts: 0,
@@ -339,6 +344,19 @@ const StatsForm = ({ gameId, onSuccess, onCancel, handleAuthError, editingStat =
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="personal_fouls">
+            Faltas personales
+          </label>
+          <input
+            id="fouls"
+            type="number"
+            min="0"
+            value={formData.fouls}
+            onChange={(e) => setFormData({...formData, fouls: parseInt(e.target.value) || 0})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
        </div>
       <div className="flex justify-end space-x-3">
         <button
@@ -364,6 +382,7 @@ const StatsTab = ({ handleAuthError }) => {
   const [games, setGames] = useState([]);
   const [stats, setStats] = useState([]);
   const [selectedGame, setSelectedGame] = useState(null);
+  const [selectedGameData, setSelectedGameData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showStatsModal, setShowStatsModal] = useState(false);
@@ -409,6 +428,21 @@ const StatsTab = ({ handleAuthError }) => {
     if (!gameId) return;
     
     try {
+      // Obtener información del juego
+      const { data: gameData, error: gameError } = await supabase
+        .from('games')
+        .select(`
+          id,
+          team_a:team_a_id(id, team_name),
+          team_b:team_b_id(id, team_name)
+        `)
+        .eq('id', gameId)
+        .single();
+
+      if (gameError) throw gameError;
+      setSelectedGameData(gameData);
+
+      // Obtener estadísticas con información del equipo
       const { data, error } = await supabase
         .from('stats')
         .select(`
@@ -417,13 +451,15 @@ const StatsTab = ({ handleAuthError }) => {
           rebounds,
           assists,
           technical_fouls,
+          fouls,
           field_goal_attempts,
           field_goal_made,
           three_point_attempts,
           three_point_made,
           free_throw_attempts,
           free_throw_made,
-          player:member_id(id, name, jersey_number)
+          member_id,
+          player:member_id(id, name, jersey_number, team_id)
         `)
         .eq('game_id', gameId)
         .order('points', { ascending: false });
@@ -483,7 +519,12 @@ const StatsTab = ({ handleAuthError }) => {
 
   // Función para editar una estadística
   const handleEditStat = (stat) => {
-    setEditingStat(stat);
+    // Pre-llenar el formulario con los datos del jugador y estadísticas
+    const editingStatWithMemberId = {
+      ...stat,
+      member_id: stat.member_id || stat.player?.id
+    };
+    setEditingStat(editingStatWithMemberId);
     setShowStatsModal(true);
   };
 
@@ -523,7 +564,7 @@ const StatsTab = ({ handleAuthError }) => {
             >
               {games.map(game => (
                 <option key={game.id} value={game.id}>
-                  {new Date(game.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })} - {game.team_a.team_name} vs {game.team_b.team_name}
+                  {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })} - {game.team_a.team_name} vs {game.team_b.team_name}
                 </option>
               ))}
             </select>
@@ -536,58 +577,234 @@ const StatsTab = ({ handleAuthError }) => {
               <p className="text-gray-500">No hay estadísticas registradas para este partido</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PTS</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">REB</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AST</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FG</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">3PT</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FT</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TF</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {stats.map(stat => (
-                    <tr key={stat.id}>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {stat.player.name} ({stat.player.jersey_number})
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.points}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.rebounds}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.assists}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {stat.field_goal_made}/{stat.field_goal_attempts}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {stat.three_point_made}/{stat.three_point_attempts}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {stat.free_throw_made}/{stat.free_throw_attempts}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.technical_fouls}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                        <button 
-                          onClick={() => handleEditStat(stat)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          Editar
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteStat(stat.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-8">
+              {selectedGameData && (
+                <>
+                  {/* Tabla del Equipo A */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">{selectedGameData.team_a.team_name}</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-blue-50">
+                          <tr>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PTS</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">REB</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AST</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FG</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">3PT</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TL</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PF</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TF</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id).length === 0 ? (
+                            <tr>
+                              <td colSpan="10" className="px-3 py-4 text-center text-gray-500">
+                                No hay estadísticas registradas para este equipo
+                              </td>
+                            </tr>
+                          ) : (
+                            stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id).map(stat => (
+                              <tr key={stat.id}>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                  {stat.player.name} ({stat.player.jersey_number})
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.points}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.rebounds}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.assists}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {stat.field_goal_made}/{stat.field_goal_attempts}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {stat.three_point_made}/{stat.three_point_attempts}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {stat.free_throw_made}/{stat.free_throw_attempts}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.fouls}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.technical_fouls}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
+                                  <button 
+                                    onClick={() => handleEditStat(stat)}
+                                    className="text-blue-600 hover:text-blue-900 mr-4"
+                                  >
+                                    Editar
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteStat(stat.id)}
+                                    className="text-red-600 hover:text-red-900"
+                                  >
+                                    Eliminar
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                         <tfoot className="bg-blue-100">
+                           <tr className="font-semibold">
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">TOTAL EQUIPO</td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.points || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.rebounds || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.assists || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.field_goal_made || 0), 0)}/
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.field_goal_attempts || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.three_point_made || 0), 0)}/
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.three_point_attempts || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.free_throw_made || 0), 0)}/
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.free_throw_attempts || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.fouls || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_a.id)
+                                 .reduce((sum, stat) => sum + (stat.technical_fouls || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                           </tr>
+                         </tfoot>
+                       </table>
+                     </div>
+                   </div>
+
+                   {/* Tabla del Equipo B */}
+                   <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">{selectedGameData.team_b.team_name}</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-green-50">
+                          <tr>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PTS</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">REB</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AST</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FG</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">3PT</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TL</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PF</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TF</th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id).length === 0 ? (
+                            <tr>
+                              <td colSpan="10" className="px-3 py-4 text-center text-gray-500">
+                                No hay estadísticas registradas para este equipo
+                              </td>
+                            </tr>
+                          ) : (
+                            stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id).map(stat => (
+                              <tr key={stat.id}>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                  {stat.player.name} ({stat.player.jersey_number})
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.points}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.rebounds}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.assists}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {stat.field_goal_made}/{stat.field_goal_attempts}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {stat.three_point_made}/{stat.three_point_attempts}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {stat.free_throw_made}/{stat.free_throw_attempts}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.fouls}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{stat.technical_fouls}</td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
+                                  <button 
+                                    onClick={() => handleEditStat(stat)}
+                                    className="text-blue-600 hover:text-blue-900 mr-4"
+                                  >
+                                    Editar
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteStat(stat.id)}
+                                    className="text-red-600 hover:text-red-900"
+                                  >
+                                    Eliminar
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                         <tfoot className="bg-green-100">
+                           <tr className="font-semibold">
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">TOTAL EQUIPO</td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.points || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.rebounds || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.assists || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.field_goal_made || 0), 0)}/
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.field_goal_attempts || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.three_point_made || 0), 0)}/
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.three_point_attempts || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.free_throw_made || 0), 0)}/
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.free_throw_attempts || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.fouls || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                               {stats.filter(stat => stat.player.team_id === selectedGameData.team_b.id)
+                                 .reduce((sum, stat) => sum + (stat.technical_fouls || 0), 0)}
+                             </td>
+                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                           </tr>
+                         </tfoot>
+                       </table>
+                     </div>
+                   </div>
+                 </>
+               )}
             </div>
           )}
         </>

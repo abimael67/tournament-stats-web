@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase/supabaseClient';
 
 const TeamProfile = () => {
@@ -89,26 +89,40 @@ const TeamProfile = () => {
       let statsData = [];
       
       if (gameIds.length > 0) {
-        const { data: fetchedStatsData, error: statsError } = await supabase
-          .from('stats')
-          .select(`
-            points,
-            rebounds,
-            assists,
-            technical_fouls,
-            field_goal_made,
-            field_goal_attempts,
-            three_point_made,
-            three_point_attempts,
-            free_throw_made,
-            free_throw_attempts
-          `)
-          .in('game_id', gameIds);
+        // Primero obtener los member_ids del equipo
+        const { data: teamMembers, error: membersError } = await supabase
+          .from('members')
+          .select('id')
+          .eq('team_id', id);
         
-        if (statsError) {
-          console.error('Error fetching stats:', statsError);
-        } else {
-          statsData = fetchedStatsData || [];
+        if (membersError) {
+          console.error('Error fetching team members:', membersError);
+        } else if (teamMembers && teamMembers.length > 0) {
+          const memberIds = teamMembers.map(member => member.id);
+          
+          // Luego obtener las estadísticas solo de esos miembros
+          const { data: fetchedStatsData, error: statsError } = await supabase
+            .from('stats')
+            .select(`
+              points,
+              rebounds,
+              assists,
+              technical_fouls,
+              field_goal_made,
+              field_goal_attempts,
+              three_point_made,
+              three_point_attempts,
+              free_throw_made,
+              free_throw_attempts
+            `)
+            .in('game_id', gameIds)
+            .in('member_id', memberIds);
+          
+          if (statsError) {
+            console.error('Error fetching stats:', statsError);
+          } else {
+            statsData = fetchedStatsData || [];
+          }
         }
       }
 
@@ -211,18 +225,40 @@ const TeamProfile = () => {
             {/* Información del cuerpo técnico */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {coach && (
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-800 mb-1">Entrenador</h3>
-                  <p className="text-gray-700">{coach.name}</p>
-                  {coach.age && <p className="text-sm text-gray-500">{coach.age} años</p>}
+                <div className="bg-blue-50 rounded-lg p-4 flex items-center justify-between">
+                  <div className="flex-grow">
+                    <h3 className="font-semibold text-blue-800 mb-1">Entrenador</h3>
+                    <p className="text-gray-700">{coach.name}</p>
+                    {coach.age && <p className="text-sm text-gray-500">{coach.age} años</p>}
+                  </div>
+                  {coach.profile_pic_url && (
+                    <div className="flex-shrink-0 ml-4">
+                      <img 
+                        src={coach.profile_pic_url} 
+                        alt={coach.name} 
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
               
               {assistant && (
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-green-800 mb-1">Asistente</h3>
-                  <p className="text-gray-700">{assistant.name}</p>
-                  {assistant.age && <p className="text-sm text-gray-500">{assistant.age} años</p>}
+                <div className="bg-green-50 rounded-lg p-4 flex items-center justify-between">
+                  <div className="flex-grow">
+                    <h3 className="font-semibold text-green-800 mb-1">Asistente</h3>
+                    <p className="text-gray-700">{assistant.name}</p>
+                    {assistant.age && <p className="text-sm text-gray-500">{assistant.age} años</p>}
+                  </div>
+                  {assistant.profile_pic_url && (
+                    <div className="flex-shrink-0 ml-4">
+                      <img 
+                        src={assistant.profile_pic_url} 
+                        alt={assistant.name} 
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -307,7 +343,11 @@ const TeamProfile = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {players.map(player => (
-              <div key={player.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+              <Link 
+                key={player.id} 
+                to={`/jugador/${player.id}`}
+                className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors block"
+              >
                 <div className="flex items-center gap-4">
                   <div className="flex-shrink-0">
                     {player.profile_pic_url ? (
@@ -332,8 +372,14 @@ const TeamProfile = () => {
                       {player.age && <span>• {player.age} años</span>}
                     </div>
                   </div>
+                  
+                  <div className="text-blue-600 hover:text-blue-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

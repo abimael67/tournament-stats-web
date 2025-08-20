@@ -7,10 +7,12 @@ import Home from './pages/Home';
 import Calendario from './pages/Calendario';
 import Equipos from './pages/Equipos';
 import TeamProfile from './pages/TeamProfile';
+import PlayerProfile from './pages/PlayerProfile';
 import Jugadores from './pages/Jugadores';
 import Standings from './pages/Standings';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
+import GameDetails from './pages/GameDetails';
 
 function App() {
   return (
@@ -24,13 +26,12 @@ function App() {
               <Route path="/calendario" element={<Calendario />} />
               <Route path="/equipos" element={<Equipos />} />
               <Route path="/equipo/:id" element={<TeamProfile />} />
+          <Route path="/jugador/:id" element={<PlayerProfile />} />
               <Route path="/jugadores" element={<Jugadores />} />
               <Route path="/standings" element={<Standings />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<Admin />} />
-              {/* Rutas adicionales para detalles */}
-              {/* <Route path="/jugador/:id" element={<DetalleJugador />} /> */}
-              {/* <Route path="/partido/:id" element={<DetallePartido />} /> */}
+              <Route path="/partido/:id" element={<GameDetails />} />
             </Routes>
           </main>
           <footer className="bg-blue-800 text-white py-4">
