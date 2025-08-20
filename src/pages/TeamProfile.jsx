@@ -7,11 +7,16 @@ const TeamProfile = () => {
   const [team, setTeam] = useState(null);
   const [members, setMembers] = useState([]);
   const [teamStats, setTeamStats] = useState(null);
+  const [teamGames, setTeamGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchTeamData();
+    if (id) {
+      fetchTeamData();
+      fetchTeamStatistics();
+      fetchTeamGames();
+    }
   }, [id]);
 
   const fetchTeamData = async () => {
@@ -43,11 +48,34 @@ const TeamProfile = () => {
       // Obtener estadísticas del equipo
       await fetchTeamStatistics();
 
+      // Obtener historial de partidos del equipo
+      await fetchTeamGames();
+
     } catch (error) {
       console.error('Error fetching team data:', error);
       setError('Error al cargar los datos del equipo');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTeamGames = async () => {
+    try {
+      // Obtener todos los partidos del equipo (completados y programados)
+      const { data: gamesData, error: gamesError } = await supabase
+        .from('games')
+        .select(`
+          *,
+          team_a:teams!team_a_id(id, team_name, logo_url),
+          team_b:teams!team_b_id(id, team_name, logo_url)
+        `)
+        .or(`team_a_id.eq.${id},team_b_id.eq.${id}`)
+        .order('date', { ascending: true });
+
+      if (gamesError) throw gamesError;
+      setTeamGames(gamesData || []);
+    } catch (error) {
+      console.error('Error fetching team games:', error);
     }
   };
 
@@ -331,6 +359,112 @@ const TeamProfile = () => {
           </div>
         </div>
       )}
+
+      {/* Historial de partidos */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-2xl font-bold text-blue-800 mb-6">Historial de Partidos</h2>
+        
+        {teamGames.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No hay partidos registrados para este equipo</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="flex space-x-4 pb-4" style={{width: 'max-content'}}>
+              {teamGames.map(game => {
+                const isTeamA = game.team_a_id === team?.id;
+                const teamScore = isTeamA ? game.score_team_a : game.score_team_b;
+                const opponentScore = isTeamA ? game.score_team_b : game.score_team_a;
+                const opponent = isTeamA ? game.team_b : game.team_a;
+                const isWinner = game.winner_team_id === team?.id;
+                const isCompleted = game.status === 'completed';
+                
+                return (
+                  <Link 
+                    to={`/partido/${game.id}`} 
+                    key={game.id}
+                    className={`block rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex-shrink-0 w-64 ${
+                      isCompleted 
+                        ? (isWinner ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600')
+                        : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                    }`}
+                  >
+                    <div className="p-4 text-white">
+                      <div className="text-center mb-3">
+                        <div className="text-xs opacity-90">
+                          {new Date(game.date).toLocaleDateString('es-DO', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short'
+                          })}
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {game.place}
+                        </div>
+                        {game.status === 'in_progress' && (
+                          <div className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold mt-1 inline-block animate-pulse">
+                            🔴 EN VIVO
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div className="text-center flex-1">
+                          {team?.logo_url ? (
+                            <img 
+                              src={team.logo_url} 
+                              alt={team.team_name} 
+                              className="w-10 h-10 object-contain mx-auto mb-1"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-1">
+                              <span className="text-sm font-bold" translate="no">{team?.team_name?.substring(0, 2)}</span>
+                            </div>
+                          )}
+                          <div className="font-semibold text-xs truncate" translate="no">{team?.team_name}</div>
+                        </div>
+                        
+                        <div className="text-center px-2">
+                          {isCompleted ? (
+                            <div className="text-lg font-bold">
+                              {teamScore} - {opponentScore}
+                            </div>
+                          ) : (
+                            <div className="text-sm font-bold opacity-75">VS</div>
+                          )}
+                        </div>
+                        
+                        <div className="text-center flex-1">
+                          {opponent?.logo_url ? (
+                            <img 
+                              src={opponent.logo_url} 
+                              alt={opponent.team_name} 
+                              className="w-10 h-10 object-contain mx-auto mb-1"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-1">
+                              <span className="text-sm font-bold" translate="no">{opponent?.team_name?.substring(0, 2)}</span>
+                            </div>
+                          )}
+                          <div className="font-semibold text-xs truncate" translate="no">{opponent?.team_name}</div>
+                        </div>
+                      </div>
+                      
+                      {isCompleted && (
+                        <div className="text-center mt-2">
+                          <span className="text-xs font-bold">
+                            {isWinner ? '✅ VICTORIA' : '❌ DERROTA'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Lista de jugadores */}
       <div className="bg-white rounded-lg shadow-lg p-6">

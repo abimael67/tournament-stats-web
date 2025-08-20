@@ -97,38 +97,37 @@ const Standings = () => {
       {/* Podio */}
       {standings.length > 0 && (
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-6">Podio Actual</h2>
           
-          <div className="flex flex-col md:flex-row justify-center items-end space-y-4 md:space-y-0 md:space-x-8">
+          <div className="flex flex-row justify-center items-end space-x-2 sm:space-x-4 md:space-x-8">
             {podiumTeams.map((team, index) => {
               // Determinar altura del podio según posición
-              const podiumHeight = index === 1 ? 'h-40' : index === 2 ? 'h-32' : 'h-48';
+              const podiumHeight = index === 1 ? 'h-32 sm:h-40' : index === 2 ? 'h-24 sm:h-32' : 'h-40 sm:h-48';
               const position = index + 1;
               
               return (
                 <div key={team.id} className="flex flex-col items-center">
-                  <Link to={`/equipo/${team.id}`} className="mb-4">
-                    <div className="w-24 h-24 rounded-full bg-white shadow-md overflow-hidden flex items-center justify-center p-2">
+                  <Link to={`/equipo/${team.id}`} className="mb-2 sm:mb-4">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-white shadow-md overflow-hidden flex items-center justify-center p-1 sm:p-2">
                       {team.logo_url ? (
                         <img 
                           src={team.logo_url} 
                           alt={team.team_name} 
-                          className="max-h-full max-w-full object-contain"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-xl font-bold text-blue-800" translate="no">{team.team_name.substring(0, 2)}</span>
+                          <span className="text-sm sm:text-lg md:text-xl font-bold text-blue-800" translate="no">{team.team_name.substring(0, 2)}</span>
                         </div>
                       )}
                     </div>
-                    <div className="text-center mt-2">
-                      <p className="font-bold" translate="no">{team.team_name}</p>
-                      <p className="text-sm text-gray-600">{team.wins}W - {team.losses}L</p>
+                    <div className="text-center mt-1 sm:mt-2">
+                      <p className="font-bold text-xs sm:text-sm md:text-base truncate max-w-20 sm:max-w-24 md:max-w-none" translate="no">{team.team_name}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">{team.wins}G - {team.losses}P</p>
                     </div>
                   </Link>
                   
-                  <div className={`${podiumHeight} w-28 bg-gradient-to-t ${position === 1 ? 'from-yellow-400 to-yellow-300' : position === 2 ? 'from-gray-400 to-gray-300' : 'from-amber-700 to-amber-600'} rounded-t-lg flex items-center justify-center`}>
-                    <span className="text-4xl font-bold text-white">{position}</span>
+                  <div className={`${podiumHeight} w-20 sm:w-24 md:w-28 bg-gradient-to-t ${position === 1 ? 'from-yellow-400 to-yellow-300' : position === 2 ? 'from-gray-400 to-gray-300' : 'from-amber-700 to-amber-600'} rounded-t-lg flex items-center justify-center`}>
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">{position}</span>
                   </div>
                 </div>
               );
@@ -139,7 +138,8 @@ const Standings = () => {
       
       {/* Tabla de clasificación */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
@@ -202,6 +202,7 @@ const Standings = () => {
             )}
           </tbody>
         </table>
+        </div>
       </div>
       
       <div className="mt-4 text-sm text-gray-500">

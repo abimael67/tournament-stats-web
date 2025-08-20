@@ -135,7 +135,7 @@ const Calendario = () => {
                           <span className="text-lg font-bold" translate="no">{game.team_a.team_name.substring(0, 2)}</span>
                         </div>
                       )}
-                      <div className="font-semibold text-sm" translate="no">{game.team_a.team_name}</div>
+                      <div className="font-semibold text-sm truncate max-w-20 sm:max-w-none" translate="no">{game.team_a.team_name}</div>
                     </div>
                     
                     <div className="text-center px-4">
@@ -161,7 +161,7 @@ const Calendario = () => {
                           <span className="text-lg font-bold" translate="no">{game.team_b.team_name.substring(0, 2)}</span>
                         </div>
                       )}
-                      <div className="font-semibold text-sm" translate="no">{game.team_b.team_name}</div>
+                      <div className="font-semibold text-sm truncate max-w-20 sm:max-w-none" translate="no">{game.team_b.team_name}</div>
                     </div>
                   </div>
                 </div>
@@ -192,19 +192,21 @@ const Calendario = () => {
                   >
                     <div className="p-4">
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center space-x-3">
-                          {game.team_a.logo_url ? (
-                            <img 
-                              src={game.team_a.logo_url} 
-                              alt={game.team_a.team_name} 
-                              className="w-10 h-10 object-contain"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                              <span className="text-xs" translate="no">{game.team_a.team_name.substring(0, 2)}</span>
-                            </div>
-                          )}
-                          <span className="font-semibold" translate="no">{game.team_a.team_name}</span>
+                        <div className="flex items-center space-x-3 sm:space-x-3">
+                          <div className="flex flex-col items-center sm:flex-row sm:space-x-3">
+                            {game.team_a.logo_url ? (
+                              <img 
+                                src={game.team_a.logo_url} 
+                                alt={game.team_a.team_name} 
+                                className="w-10 h-10 object-contain"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <span className="text-xs" translate="no">{game.team_a.team_name.substring(0, 2)}</span>
+                              </div>
+                            )}
+                            <span className="font-semibold text-xs sm:text-base truncate max-w-20 sm:max-w-32 md:max-w-none mt-1 sm:mt-0" translate="no">{game.team_a.team_name}</span>
+                          </div>
                         </div>
                         
                         {(game.status === 'completed' || game.status === 'in_progress') ? (
@@ -228,19 +230,21 @@ const Calendario = () => {
                           </div>
                         )}
                         
-                        <div className="flex items-center space-x-3">
-                          <span className="font-semibold" translate="no">{game.team_b.team_name}</span>
-                          {game.team_b.logo_url ? (
-                            <img 
-                              src={game.team_b.logo_url} 
-                              alt={game.team_b.team_name} 
-                              className="w-10 h-10 object-contain"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                              <span className="text-xs" translate="no">{game.team_b.team_name.substring(0, 2)}</span>
-                            </div>
-                          )}
+                        <div className="flex items-center space-x-3 sm:space-x-3">
+                          <div className="flex flex-col items-center sm:flex-row sm:space-x-3">
+                            <span className="font-semibold text-xs sm:text-base truncate max-w-20 sm:max-w-32 md:max-w-none mt-1 sm:mt-0 sm:order-1" translate="no">{game.team_b.team_name}</span>
+                            {game.team_b.logo_url ? (
+                              <img 
+                                src={game.team_b.logo_url} 
+                                alt={game.team_b.team_name} 
+                                className="w-10 h-10 object-contain sm:order-2"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center sm:order-2">
+                                <span className="text-xs" translate="no">{game.team_b.team_name.substring(0, 2)}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       

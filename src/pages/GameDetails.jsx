@@ -341,28 +341,39 @@ const GameDetails = () => {
             
             
             {/* Marcador */}
-            <div className="flex items-center justify-center space-x-8">
-              <div className="text-center">
-                <div className="flex items-center space-x-4">
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-6 md:space-y-0 md:space-x-8">
+              {/* Equipo A */}
+              <div className="flex flex-col items-center text-center">
+                <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
                   {game.team_a.logo_url && (
                     <img 
                       src={game.team_a.logo_url} 
                       alt={`Logo ${game.team_a.team_name}`}
-                      className="w-16 h-16 object-contain"
+                      className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain flex-shrink-0"
                     />
                   )}
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">
-                      <a href={`/equipo/${game.team_a.id}`}>{game.team_a.team_name}</a>
+                  <div className="min-w-0">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                      <a href={`/equipo/${game.team_a.id}`} translate="no">{game.team_a.team_name}</a>
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">
                       {game.team_a.church_name}
                     </p>
                   </div>
                 </div>
+                {/* Score para móvil */}
+                <div className="md:hidden mt-2">
+                  <div className="text-3xl font-bold text-gray-900">
+                    {game.score_team_a !== null ? game.score_team_a : '-'}
+                  </div>
+                  {game.winner_team_id === game.team_a.id && (
+                    <div className="text-green-600 font-semibold text-xs mt-1">GANADOR</div>
+                  )}
+                </div>
               </div>
               
-              <div className="text-center">
+              {/* Score para desktop */}
+              <div className="hidden md:block text-center">
                 <div className="text-4xl font-bold text-gray-900">
                   {game.score_team_a !== null ? game.score_team_a : '-'}
                 </div>
@@ -371,9 +382,10 @@ const GameDetails = () => {
                 )}
               </div>
               
-              <div className="text-2xl font-bold text-gray-400">VS</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-400">VS</div>
               
-              <div className="text-center">
+              {/* Score para desktop */}
+              <div className="hidden md:block text-center">
                 <div className="text-4xl font-bold text-gray-900">
                   {game.score_team_b !== null ? game.score_team_b : '-'}
                 </div>
@@ -382,13 +394,14 @@ const GameDetails = () => {
                 )}
               </div>
               
-              <div className="text-center">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">
-                      <a href={`/equipo/${game.team_b.id}`}>{game.team_b.team_name}</a>
+              {/* Equipo B */}
+              <div className="flex flex-col items-center text-center">
+                <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                  <div className="min-w-0 sm:order-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                      <a href={`/equipo/${game.team_b.id}`} translate="no">{game.team_b.team_name}</a>
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">
                       {game.team_b.church_name}
                     </p>
                   </div>
@@ -396,8 +409,17 @@ const GameDetails = () => {
                     <img 
                       src={game.team_b.logo_url} 
                       alt={`Logo ${game.team_b.team_name}`}
-                      className="w-16 h-16 object-contain"
+                      className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain flex-shrink-0 sm:order-2"
                     />
+                  )}
+                </div>
+                {/* Score para móvil */}
+                <div className="md:hidden mt-2">
+                  <div className="text-3xl font-bold text-gray-900">
+                    {game.score_team_b !== null ? game.score_team_b : '-'}
+                  </div>
+                  {game.winner_team_id === game.team_b.id && (
+                    <div className="text-green-600 font-semibold text-xs mt-1">GANADOR</div>
                   )}
                 </div>
               </div>
