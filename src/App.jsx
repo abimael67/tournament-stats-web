@@ -39,6 +39,7 @@ function App() {
               <p>© {new Date().getFullYear()} Torneo de Baloncesto entre Iglesias Adventistas de Santiago</p>
             </div>
           </footer>
+
         </div>
       </AuthProvider>
     </Router>

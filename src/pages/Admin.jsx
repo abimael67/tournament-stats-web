@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase/supabaseClient';
@@ -8,8 +8,22 @@ import PlayersTab from '../components/admin/PlayersTab';
 import StatsTab from '../components/admin/StatsTab';
 
 const Admin = () => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, checkAdminStatus } = useAuth();
   const [activeTab, setActiveTab] = useState('games');
+  const [adminCheckLoading, setAdminCheckLoading] = useState(true);
+
+  // Verificar admin status cuando se monta el componente
+  useEffect(() => {
+    const verifyAdminAccess = async () => {
+      if (user && !loading) {
+        console.log('🔐 Verifying admin access for Admin page');
+        await checkAdminStatus();
+        setAdminCheckLoading(false);
+      }
+    };
+    
+    verifyAdminAccess();
+  }, [user, loading, checkAdminStatus]);
 
   // Función para manejar errores de autenticación
   const handleAuthError = async (error) => {
@@ -28,12 +42,16 @@ const Admin = () => {
     return false; // No es un error de autenticación
   };
 
-  if (loading) {
+  if (loading || adminCheckLoading) {
     return <div className="flex justify-center items-center min-h-screen">Cargando...</div>;
   }
 
-  if (!user || !isAdmin) {
+  if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return (

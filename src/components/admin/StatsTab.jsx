@@ -583,7 +583,7 @@ const StatsTab = ({ handleAuthError }) => {
             >
               {games.map(game => (
                 <option key={game.id} value={game.id}>
-                  {new Date(game.date + 'T00:00:00').toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })} - {game.team_a.team_name} vs {game.team_b.team_name}
+                  {new Date(game.date).toLocaleString('es-DO', { year: 'numeric', month: 'short', day: 'numeric' })} - {game.team_a.team_name} vs {game.team_b.team_name}
                 </option>
               ))}
             </select>

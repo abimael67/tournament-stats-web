@@ -129,6 +129,9 @@ ALTER TABLE stats ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Los usuarios pueden leer su propio perfil" ON profiles FOR SELECT 
   USING (auth.uid() = id);
 
+CREATE POLICY "Usuarios autenticados pueden leer roles" ON profiles FOR SELECT 
+  USING (auth.role() = 'authenticated');
+
 CREATE POLICY "Solo administradores pueden actualizar perfiles" ON profiles FOR UPDATE 
   USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 

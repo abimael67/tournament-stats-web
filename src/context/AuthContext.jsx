@@ -8,140 +8,160 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  // Función para limpiar el almacenamiento local cuando hay tokens corruptos
-  const clearCorruptedSession = () => {
+  
+  // Función simplificada para verificar si el usuario es admin
+  const checkUserAdminRole = async (userId) => {
     try {
-      // Limpiar sessionStorage de Supabase
-      const keys = Object.keys(sessionStorage);
-      keys.forEach(key => {
-        if (key.startsWith('sb-') || key.includes('supabase')) {
-          sessionStorage.removeItem(key);
-        }
-      });
+      console.log('🔍 Checking admin role for user:', userId);
       
-      // También limpiar localStorage por si acaso
-      const localKeys = Object.keys(localStorage);
-      localKeys.forEach(key => {
-        if (key.startsWith('sb-') || key.includes('supabase')) {
-          localStorage.removeItem(key);
-        }
-      });
+      // Verificar primero si tenemos una sesión válida
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('❌ No session available for admin check');
+        return false;
+      }
       
-      console.log('Sesión corrupta limpiada del almacenamiento');
-    } catch (err) {
-      console.error('Error al limpiar el almacenamiento:', err);
+      // Usar una consulta más simple sin AbortController
+      console.log('📊 Executing profiles query for user:', userId);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle(); // Usar maybeSingle en lugar de single para evitar errores si no existe
+      
+      console.log('📊 Query result - Data:', data, 'Error:', error);
+      
+      if (error) {
+        console.error('❌ Error checking admin role:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          status: error.status
+        });
+        return false;
+      }
+      
+      if (!data) {
+        console.log('⚠️ No profile found for user, defaulting to false');
+        return false;
+      }
+      
+      const isAdmin = data.role === 'admin';
+      console.log('✅ Admin check result:', isAdmin, 'Role:', data.role);
+      return isAdmin;
+    } catch (error) {
+      console.error('💥 Error checking admin role:', error.message);
+      return false;
     }
   };
 
+
+
+
+
   useEffect(() => {
-    // Verificar la sesión actual
-    const checkSession = async () => {
+    let mounted = true;
+    
+    const initializeAuth = async () => {
       try {
-        setLoading(true);
-        const { data, error } = await supabase.auth.getSession();
+        console.log('🚀 Initializing auth...');
+        console.log('🔧 Supabase URL:', import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Missing');
+        console.log('🔧 Supabase Key:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'Missing');
         
-        if (error) {
-          console.error('Error al obtener la sesión:', error);
-          // Limpiar tokens corruptos del almacenamiento
-          clearCorruptedSession();
+        // SOLUCIÓN: Evitar health check durante la inicialización
+        // El health check también puede causar timeouts y bloquear la app
+        console.log('🏥 Skipping health check to avoid blocking initialization');
+        
+        // SOLUCIÓN: Evitar getSession durante la inicialización debido a timeouts
+        // En su lugar, usar el listener de auth state change que es más confiable
+        console.log('🔐 Skipping getSession due to timeout issues, using auth listener instead');
+        
+        // Inicializar con estado por defecto
+        let session = null;
+        console.log('✅ Initialization completed without blocking calls');
+        
+        if (session?.user) {
+            console.log('✅ Initial session found for:', session.user.email);
+            setUser(session.user);
+            
+            // No verificar admin role durante la inicialización para evitar bloqueos
+            // Se verificará cuando sea necesario (ej: al acceder a rutas admin)
+            console.log('⏭️ Skipping admin check during initialization to avoid blocking');
+            setIsAdmin(false); // Default to false, will be checked later if needed
+          } else {
+          console.log('❌ No initial session found');
           setUser(null);
           setIsAdmin(false);
+        }
+        
+        if (mounted) {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('💥 Error in initializeAuth:', error);
+        if (mounted) {
+          setUser(null);
+          setIsAdmin(false);
+          setLoading(false);
+        }
+      }
+    };
+    
+    initializeAuth();
+
+    // Escuchar cambios en la autenticación (MEJORADO)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔄 Auth state change:', {
+          event,
+          userEmail: session?.user?.email || 'No user',
+          timestamp: new Date().toISOString()
+        });
+        
+        if (!mounted) {
+          console.log('⚠️ Component unmounted, ignoring auth event');
           return;
         }
         
-        if (data.session) {
-          console.log('INITIAL_SESSION - Usuario:', data.session.user.email);
-          setUser(data.session.user);
-          
-          // Verificación directa por email (solución temporal)
-          const isAdminEmail = data.session.user.email === 'jamroa67@gmail.com';
-          console.log('INITIAL_SESSION - ¿Es email de admin?:', isAdminEmail);
-          setIsAdmin(isAdminEmail);
-        } else {
-          // No hay sesión activa
-          setUser(null);
-          setIsAdmin(false);
-        }
-      } catch (err) {
-        console.error('Error inesperado al verificar la sesión:', err);
-        // Solo resetear si es un error de autenticación real
-        if (err.message?.includes('JWT') || err.code === 'PGRST301') {
-          clearCorruptedSession();
-          setUser(null);
-          setIsAdmin(false);
-        }
-        // Para otros errores, mantener el estado actual
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkSession();
-
-    // Escuchar cambios en la autenticación
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
         try {
-          console.log('Evento de autenticación:', event);
-          
           if (event === 'SIGNED_OUT') {
+            console.log('👋 User signed out');
             setUser(null);
             setIsAdmin(false);
-            setLoading(false);
-            // Solo navegar si no estamos ya en login
-            if (window.location.pathname !== '/login') {
-              navigate('/login');
-            }
-          } else if (session && event === 'SIGNED_IN') {
-            console.log('SIGNED_IN - Usuario:', session.user.email);
+            navigate('/login');
+          } else if (event === 'SIGNED_IN' && session?.user) {
+            console.log('👤 User signed in:', session.user.email);
             setUser(session.user);
-            
-            // Verificación directa por email (solución temporal)
-            const isAdminEmail = session.user.email === 'jamroa67@gmail.com';
-            console.log('SIGNED_IN - ¿Es email de admin?:', isAdminEmail);
-            setIsAdmin(isAdminEmail);
-            setLoading(false);
-          } else if (session && event === 'TOKEN_REFRESHED') {
-            console.log('TOKEN_REFRESHED - Usuario:', session.user.email);
+            // No verificar admin role aquí para evitar bloqueos
+            setIsAdmin(false);
+            console.log('✅ User state updated successfully');
+          } else if (session?.user) {
+            console.log('👤 Setting user from auth state change');
             setUser(session.user);
-            
-            // Verificación directa por email (solución temporal)
-            const isAdminEmail = session.user.email === 'jamroa67@gmail.com';
-            console.log('TOKEN_REFRESHED - ¿Es email de admin?:', isAdminEmail);
-            setIsAdmin(isAdminEmail);
-            setLoading(false);
-          } else if (session && event === 'INITIAL_SESSION') {
-            console.log('INITIAL_SESSION en listener - Usuario:', session.user.email);
-            setUser(session.user);
-            
-            // Verificación directa por email (solución temporal)
-            const isAdminEmail = session.user.email === 'jamroa67@gmail.com';
-            console.log('INITIAL_SESSION en listener - ¿Es email de admin?:', isAdminEmail);
-            setIsAdmin(isAdminEmail);
-            setLoading(false);
+            setIsAdmin(false);
           } else {
-            setUser(null);
-            setIsAdmin(false);
-            setLoading(false);
-          }
-        } catch (err) {
-          console.error('Error en el listener de autenticación:', err);
-          // Solo resetear si es un error de autenticación real
-          if (err.message?.includes('JWT') || err.code === 'PGRST301') {
-            clearCorruptedSession();
+            console.log('🚪 Clearing user state (logout/no session)');
             setUser(null);
             setIsAdmin(false);
           }
-          setLoading(false);
+          
+          console.log('🏁 Auth state change processing completed');
+        } catch (authError) {
+          console.error('🚨 Error processing auth state change:', {
+            message: authError.message,
+            event,
+            userEmail: session?.user?.email
+          });
         }
       }
     );
 
     return () => {
+      mounted = false;
       authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   // Función para refrescar el token de autenticación
   const refreshToken = async () => {
@@ -149,8 +169,7 @@ export function AuthProvider({ children }) {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
         console.error('Error al refrescar el token:', error);
-        // Limpiar tokens corruptos y cerrar sesión
-        clearCorruptedSession();
+
         await supabase.auth.signOut();
         return false;
       } else if (data.session) {
@@ -160,8 +179,7 @@ export function AuthProvider({ children }) {
       return false;
     } catch (err) {
       console.error('Error inesperado al refrescar el token:', err);
-      // Limpiar tokens corruptos en caso de error inesperado
-      clearCorruptedSession();
+
       return false;
     }
   };
@@ -189,13 +207,30 @@ export function AuthProvider({ children }) {
       if (refreshSuccess) {
         return true; // Indica que se ha manejado un error de autenticación y se puede reintentar
       } else {
-        // Si no se pudo refrescar, limpiar tokens corruptos y cerrar sesión
-        clearCorruptedSession();
+        // Si no se pudo refrescar, cerrar sesión
         await supabase.auth.signOut();
         return false;
       }
     }
     return false; // No es un error de autenticación
+  };
+
+  // Función para verificar admin role bajo demanda
+  const checkAdminStatus = async () => {
+    if (!user) {
+      console.log('❌ No user available for admin check');
+      return false;
+    }
+    
+    try {
+      const adminStatus = await checkUserAdminRole(user.id);
+      setIsAdmin(adminStatus);
+      return adminStatus;
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+      return false;
+    }
   };
 
   const value = {
@@ -204,6 +239,7 @@ export function AuthProvider({ children }) {
     loading,
     refreshToken,
     handleAuthError,
+    checkAdminStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
