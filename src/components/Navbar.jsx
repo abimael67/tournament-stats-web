@@ -1,15 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { signOut } from '../lib/supabase/supabaseClient';
 
 const Navbar = () => {
-  const { user, isAdmin } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const handleLogout = async () => {
-    await signOut();
-  };
+  const { user, isAdmin } = useAuth();
 
   return (
     <nav className="bg-blue-800 text-white shadow-md">
@@ -24,31 +19,11 @@ const Navbar = () => {
             <Link to="/jugadores" className="hover:text-blue-200">Jugadores</Link>
             <Link to="/standings" className="hover:text-blue-200">Standings</Link>
             <Link to="/info" className="hover:text-blue-200">Info</Link>
-          </div>
-
-          {/* Desktop Auth Section */}
-          <div className="hidden md:block">
-            {user ? (
-              <div className="flex items-center space-x-4">
-                {isAdmin && (
-                  <Link to="/admin" className="text-yellow-300 hover:text-yellow-100">
-                    Panel Admin
-                  </Link>
-                )}
-                <button 
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
-                >
-                  Cerrar Sesión
-                </button>
-              </div>
-            ) : (
-              <Link 
-                to="/login" 
-                className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
-              >
-                Iniciar Sesión
-              </Link>
+            {user && isAdmin() && (
+              <Link to="/admin" className="text-yellow-300 hover:text-yellow-100">Panel Admin</Link>
+            )}
+            {!user && (
+              <Link to="/login" className="text-green-300 hover:text-green-100">Iniciar Sesión</Link>
             )}
           </div>
 
@@ -102,40 +77,24 @@ const Navbar = () => {
             >
               Info
             </Link>
-            
-            {/* Mobile Auth Section */}
-            <div className="pt-2 border-t border-blue-700">
-              {user ? (
-                <div className="space-y-2">
-                  {isAdmin && (
-                    <Link 
-                      to="/admin" 
-                      className="block py-2 px-4 text-yellow-300 hover:bg-blue-700 rounded"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Panel Admin
-                    </Link>
-                  )}
-                  <button 
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="block w-full text-left py-2 px-4 bg-red-600 hover:bg-red-700 rounded"
-                  >
-                    Cerrar Sesión
-                  </button>
-                </div>
-              ) : (
-                <Link 
-                  to="/login" 
-                  className="block py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Iniciar Sesión
-                </Link>
-              )}
-            </div>
+            {user && isAdmin() && (
+              <Link 
+                to="/admin" 
+                className="block py-2 px-4 text-yellow-300 hover:bg-blue-700 rounded"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Panel Admin
+              </Link>
+            )}
+            {!user && (
+              <Link 
+                to="/login" 
+                className="block py-2 px-4 text-green-300 hover:bg-blue-700 rounded"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Iniciar Sesión
+              </Link>
+            )}
           </div>
         </div>
       </div>

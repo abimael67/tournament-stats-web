@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, supabase } from '../lib/supabase/supabaseClient';
+import { useAuth } from '../hooks/useAuth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,24 +16,11 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const { data, error } = await signIn(email, password);
+      const { error } = await signIn(email, password);
       
       if (error) throw error;
       
-      // Verificar si el usuario es admin consultando la tabla profiles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single();
-      
-      if (profileError) throw profileError;
-      
-      if (profileData?.role !== 'admin') {
-        // Cerrar sesión si no es admin
-        await supabase.auth.signOut();
-        throw new Error('Acceso no autorizado. Solo administradores pueden iniciar sesión.');
-      }
+      console.log('✅ Login successful');
       
       // Redirigir al panel de administración
       navigate('/admin');

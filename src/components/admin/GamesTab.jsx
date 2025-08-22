@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase/supabaseClient';
 
-const GamesTab = ({ handleAuthError }) => {
+const GamesTab = () => {
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ const GamesTab = ({ handleAuthError }) => {
       console.error('Error loading games:', err);
       setError(err.message);
       if (err.message.includes('JWT') || err.message.includes('token')) {
-        handleAuthError();
+        console.error('Error fetching data:', err);
       }
     } finally {
       setLoading(false);
@@ -72,9 +72,6 @@ const GamesTab = ({ handleAuthError }) => {
       setTeams(teamsData || []);
     } catch (err) {
       console.error('Error loading teams:', err);
-      if (err.message.includes('JWT') || err.message.includes('token')) {
-        handleAuthError();
-      }
     }
   };
 
@@ -126,9 +123,6 @@ const GamesTab = ({ handleAuthError }) => {
     } catch (err) {
       console.error('Error deleting game:', err);
       alert('Error al eliminar el partido: ' + err.message);
-      if (err.message.includes('JWT') || err.message.includes('token')) {
-        handleAuthError();
-      }
     }
   };
 
@@ -214,9 +208,6 @@ const GamesTab = ({ handleAuthError }) => {
     } catch (err) {
       console.error('Error saving game:', err);
       setFormError(err.message);
-      if (err.message.includes('JWT') || err.message.includes('token')) {
-        handleAuthError();
-      }
     } finally {
       setFormLoading(false);
     }

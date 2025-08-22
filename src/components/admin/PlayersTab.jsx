@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase/supabaseClient';
 import { getPositionName } from '../../utils';
 
-const PlayersTab = ({ handleAuthError }) => {
+const PlayersTab = () => {
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,16 +61,13 @@ const PlayersTab = ({ handleAuthError }) => {
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Error al cargar los datos');
-        if (err.message.includes('JWT') || err.message.includes('token')) {
-          handleAuthError();
-        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [handleAuthError]);
+  }, []);
 
   const handleNewPlayer = () => {
     setFormData({
@@ -124,9 +121,6 @@ const PlayersTab = ({ handleAuthError }) => {
     } catch (err) {
       console.error('Error deleting player:', err);
       alert('No se pudo eliminar el jugador. Inténtalo de nuevo.');
-      if (err.message.includes('JWT') || err.message.includes('token')) {
-        handleAuthError();
-      }
     }
   };
 
@@ -191,13 +185,24 @@ const PlayersTab = ({ handleAuthError }) => {
       if (playersError) throw playersError;
       
       setPlayers(playersData || []);
+      
+      // Resetear formulario y cerrar modal
+      setFormData({
+        id: null,
+        name: '',
+        age: '',
+        jersey_number: '',
+        role: 'player',
+        profile_pic_url: '',
+        team_id: '',
+        inactive: false,
+        position: ''
+      });
+      setIsEditing(false);
       setShowModal(false);
     } catch (err) {
       console.error('Error saving player:', err);
       setFormError(err.message);
-      if (err.message.includes('JWT') || err.message.includes('token')) {
-        handleAuthError();
-      }
     } finally {
       setFormLoading(false);
     }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase/supabaseClient';
 
-const TeamsTab = ({ handleAuthError }) => {
+const TeamsTab = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,28 +57,15 @@ const TeamsTab = ({ handleAuthError }) => {
     }
     
     try {
-      const deleteTeam = async () => {
-        const { error } = await supabase
-          .from('teams')
-          .delete()
-          .eq('id', teamId);
-        
-        if (error) {
-          // Verificar si es un error de autenticación
-          const isAuthError = await handleAuthError(error);
-          if (isAuthError) {
-            // Reintentar después de refrescar el token
-            return deleteTeam();
-          }
-          throw error;
-        }
-        
-        // Actualizar la lista de equipos
-        setTeams(teams.filter(team => team.id !== teamId));
-      };
+      const { error } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', teamId);
       
-      // Ejecutar la función de eliminar
-      await deleteTeam();
+      if (error) throw error;
+      
+      // Actualizar la lista de equipos
+      setTeams(teams.filter(team => team.id !== teamId));
       
     } catch (err) {
       console.error('Error deleting team:', err);
@@ -92,59 +79,38 @@ const TeamsTab = ({ handleAuthError }) => {
     setFormLoading(true);
     
     try {
-      const saveTeam = async () => {
-        if (isEditing) {
-          // Actualizar equipo existente
-          const { data, error } = await supabase
-            .from('teams')
-            .update({
-              team_name: formData.team_name,
-              church_name: formData.church_name,
-              logo_url: formData.logo_url || null
-            })
-            .eq('id', formData.id)
-            .select();
-          
-          if (error) {
-            // Verificar si es un error de autenticación
-            const isAuthError = await handleAuthError(error);
-            if (isAuthError) {
-              // Reintentar después de refrescar el token
-              return saveTeam();
-            }
-            throw error;
-          }
-          
-          // Actualizar la lista de equipos
-          setTeams(teams.map(team => team.id === formData.id ? data[0] : team));
-        } else {
-          // Crear nuevo equipo
-          const { data, error } = await supabase
-            .from('teams')
-            .insert([{
-              team_name: formData.team_name,
-              church_name: formData.church_name,
-              logo_url: formData.logo_url || null
-            }])
-            .select();
-          
-          if (error) {
-            // Verificar si es un error de autenticación
-            const isAuthError = await handleAuthError(error);
-            if (isAuthError) {
-              // Reintentar después de refrescar el token
-              return saveTeam();
-            }
-            throw error;
-          }
-          
-          // Actualizar la lista de equipos
-          setTeams([...teams, data[0]]);
-        }
-      };
-      
-      // Ejecutar la función de guardar
-      await saveTeam();
+      if (isEditing) {
+        // Actualizar equipo existente
+        const { data, error } = await supabase
+          .from('teams')
+          .update({
+            team_name: formData.team_name,
+            church_name: formData.church_name,
+            logo_url: formData.logo_url || null
+          })
+          .eq('id', formData.id)
+          .select();
+        
+        if (error) throw error;
+        
+        // Actualizar la lista de equipos
+        setTeams(teams.map(team => team.id === formData.id ? data[0] : team));
+      } else {
+        // Crear nuevo equipo
+        const { data, error } = await supabase
+          .from('teams')
+          .insert([{
+            team_name: formData.team_name,
+            church_name: formData.church_name,
+            logo_url: formData.logo_url || null
+          }])
+          .select();
+        
+        if (error) throw error;
+        
+        // Actualizar la lista de equipos
+        setTeams([...teams, data[0]]);
+      }
       
       // Cerrar el modal y limpiar el formulario
       setShowModal(false);

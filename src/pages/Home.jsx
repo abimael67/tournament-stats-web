@@ -52,7 +52,7 @@ const Home = () => {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-blue-800 mb-4">Torneo de Baloncesto entre Iglesias Adventistas de Santiago</h1>
         <p className="text-xl text-gray-600">Estadísticas, calendario y más información sobre el torneo</p>
-                <p className="text-sm text-gray-600">Torneo benefico organizado por la Iglesia Adventista del Séptimo Día "Libertad"</p>
+                <p className="text-sm text-gray-600">Torneo benéfico organizado por la Iglesia Adventista del Séptimo Día "Libertad"</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
