@@ -32,7 +32,6 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/partido/:id" element={<GameDetails />} />
-              <Route path="/testing" element={<Testing />} />
             </Routes>
           </main>
           <footer className="bg-blue-800 text-white py-4">
