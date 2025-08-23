@@ -590,7 +590,12 @@ const TeamProfile = () => {
                   </div>
 
                   <div className="flex-grow">
-                    <h3 className="font-semibold text-gray-800" translate="no">
+                    <h3
+                      className={`font-semibold text-gray-800 ${
+                        player.inactive && "line-through"
+                      }`}
+                      translate="no"
+                    >
                       {player.name}
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
