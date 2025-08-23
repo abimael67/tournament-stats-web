@@ -120,6 +120,13 @@ const Navbar = () => {
               Standings
             </Link>
             <Link
+              to="/lideres"
+              className="block py-2 px-4 hover:bg-blue-700 rounded"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Líderes
+            </Link>
+            <Link
               to="/info"
               className="block py-2 px-4 hover:bg-blue-700 rounded"
               onClick={() => setIsMenuOpen(false)}
