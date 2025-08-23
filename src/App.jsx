@@ -14,6 +14,7 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import GameDetails from "./pages/GameDetails";
 import Info from "./pages/Info";
+import Lideres from "./pages/Lideres";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/partido/:id" element={<GameDetails />} />
               <Route path="/info" element={<Info />} />
+              <Route path="/lideres" element={<Lideres />} />
             </Routes>
           </main>
           <footer className="bg-blue-800 text-white py-4">
