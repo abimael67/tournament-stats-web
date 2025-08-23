@@ -13,7 +13,6 @@ import Standings from "./pages/Standings";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import GameDetails from "./pages/GameDetails";
-import Testing from "./pages/Testing";
 
 function App() {
   return (
