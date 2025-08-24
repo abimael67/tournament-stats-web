@@ -15,12 +15,12 @@ const Navbar = () => {
               <img
                 src="https://ittjdadhzzieregopwba.supabase.co/storage/v1/object/public/imagenes_torneo/logo.png"
                 alt="logo"
-                className="w-16 h-16"
+                className="w-16 h-16 min-w-16 min-h-16"
               />
             </Link>
-            <Link to="/" className="text-xl font-bold" translate="no">
+            {/* <Link to="/" className="text-xl font-bold" translate="no">
               Liga de Baloncesto Adventista del Norte
-            </Link>
+            </Link> */}
           </div>
 
           {/* Desktop Menu */}
