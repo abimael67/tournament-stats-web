@@ -207,10 +207,9 @@ const Lideres = () => {
     );
   };
 
-  const LeaderCard = ({ titulo, icono, lider, finalistas, unidad = "" }) => (
+  const LeaderCard = ({ titulo, lider, finalistas, unidad = "" }) => (
     <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
       <div className="text-center mb-6">
-        <div className="text-4xl mb-2">{icono}</div>
         <h3 className="text-2xl font-bold text-gray-800">{titulo}</h3>
       </div>
       
@@ -317,7 +316,6 @@ const Lideres = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
             <LeaderCard 
               titulo="Puntos por Juego"
-              icono="🏀"
               lider={lideres.puntos.lider}
               finalistas={lideres.puntos.finalistas}
               unidad=" pts"
@@ -325,7 +323,6 @@ const Lideres = () => {
             
             <LeaderCard 
               titulo="Rebotes por Juego"
-              icono="💪"
               lider={lideres.rebotes.lider}
               finalistas={lideres.rebotes.finalistas}
               unidad=" reb"
@@ -333,7 +330,6 @@ const Lideres = () => {
             
             <LeaderCard 
               titulo="Asistencias por Juego"
-              icono="🤝"
               lider={lideres.asistencias.lider}
               finalistas={lideres.asistencias.finalistas}
               unidad=" ast"
@@ -345,14 +341,12 @@ const Lideres = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <LeaderCard 
             titulo="MVP del Torneo"
-            icono="🌟"
             lider={null}
             finalistas={null}
           />
           
           <LeaderCard 
             titulo="MVP de la Final"
-            icono="🏆"
             lider={null}
             finalistas={null}
           />

@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import GameDetails from "./pages/GameDetails";
 import Info from "./pages/Info";
 import Lideres from "./pages/Lideres";
+import PerfilJugadorBeta from "./pages/PerfilJugadorBeta";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
               <Route path="/equipos" element={<Equipos />} />
               <Route path="/equipo/:id" element={<TeamProfile />} />
               <Route path="/jugador/:id" element={<PlayerProfile />} />
+              <Route path="/jugador-beta/:id" element={<PerfilJugadorBeta />} />
               <Route path="/jugadores" element={<Jugadores />} />
               <Route path="/standings" element={<Standings />} />
               <Route path="/login" element={<Login />} />
