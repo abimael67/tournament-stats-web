@@ -55,13 +55,11 @@ const Calendario = () => {
 
   // Agrupar partidos por fecha
   const gamesByDate = games.reduce((acc, game) => {
-    const date = new Date(game.date).toLocaleTimeString('es-DO', {
+    const date = new Date(game.date).toLocaleDateString('es-DO', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
     
     if (!acc[date]) {
