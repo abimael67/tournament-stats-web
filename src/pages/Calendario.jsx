@@ -6,6 +6,7 @@ const Calendario = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('pending');
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -172,14 +173,59 @@ const Calendario = () => {
       {/* Calendario completo */}
       <div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Todos los Partidos</h2>
-        {Object.keys(gamesByDate).length === 0 ? (
-          <div className="text-center py-10 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No hay partidos programados</p>
-          </div>
-        ) : (
-          Object.entries(gamesByDate).map(([date, dateGames]) => (
-            <div key={date} className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-700 mb-4 capitalize">{date}</h2>
+        
+        {/* Pestañas */}
+        <div className="flex border-b border-gray-200 mb-6">
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'pending'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Pendientes
+          </button>
+          <button
+            onClick={() => setActiveTab('completed')}
+            className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'completed'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Completados
+          </button>
+        </div>
+        
+        {/* Filtrar juegos según la pestaña activa */}
+        {(() => {
+          const filteredGamesByDate = Object.entries(gamesByDate).reduce((acc, [date, dateGames]) => {
+            const filteredGames = dateGames.filter(game => {
+              if (activeTab === 'pending') {
+                return game.status === 'pending' || game.status === 'in_progress' || game.status === 'postponed';
+              } else {
+                return game.status === 'completed';
+              }
+            });
+            
+            if (filteredGames.length > 0) {
+              acc[date] = filteredGames;
+            }
+            
+            return acc;
+          }, {});
+          
+          return Object.keys(filteredGamesByDate).length === 0 ? (
+            <div className="text-center py-10 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">
+                {activeTab === 'pending' ? 'No hay partidos pendientes' : 'No hay partidos completados'}
+              </p>
+            </div>
+          ) : (
+            Object.entries(filteredGamesByDate).map(([date, dateGames]) => (
+              <div key={date} className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4 capitalize">{date}</h2>
               
               <div className="space-y-4">
                 {dateGames.map(game => (
@@ -257,7 +303,8 @@ const Calendario = () => {
               </div>
             </div>
           ))
-        )}
+        );
+        })()}
       </div>
     </div>
   );
