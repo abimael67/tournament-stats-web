@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase/supabaseClient";
+import { getGameStatus } from "../../utils";
 
 const GamesTab = () => {
   const [games, setGames] = useState([]);
@@ -311,14 +312,12 @@ const GamesTab = () => {
                           ? "bg-green-100 text-green-800"
                           : game.status === "in_progress"
                           ? "bg-yellow-100 text-yellow-800"
+                          : game.status === "invalid"
+                          ? "bg-red-100 text-red-800"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {game.status === "completed"
-                        ? "Completado"
-                        : game.status === "in_progress"
-                        ? "En Progreso"
-                        : "Pendiente"}
+                      {getGameStatus(game.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -454,11 +453,13 @@ const GamesTab = () => {
                     <option value="pending">Pendiente</option>
                     <option value="in_progress">En Progreso</option>
                     <option value="completed">Completado</option>
+                    <option value="invalid">Nulo</option>
                   </select>
                 </div>
 
                 {(formData.status === "completed" ||
-                  formData.status === "in_progress") && (
+                  formData.status === "in_progress" ||
+                  formData.status === "invalid") && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div>

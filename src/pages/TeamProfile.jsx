@@ -442,7 +442,8 @@ const TeamProfile = () => {
                 const opponent = isTeamA ? game.team_b : game.team_a;
                 const isWinner = game.winner_team_id === team?.id;
                 const isCompleted = game.status === "completed";
-
+                const isInvalid = game.status === "invalid";
+                console.log("Is invalid:", isInvalid);
                 return (
                   <Link
                     to={`/partido/${game.id}`}
@@ -452,6 +453,8 @@ const TeamProfile = () => {
                         ? isWinner
                           ? "bg-gradient-to-r from-green-500 to-green-600"
                           : "bg-gradient-to-r from-red-500 to-red-600"
+                        : isInvalid
+                        ? "bg-gradient-to-r from-gray-500 to-gray-600"
                         : "bg-gradient-to-r from-blue-500 to-blue-600"
                     }`}
                   >
@@ -499,7 +502,7 @@ const TeamProfile = () => {
                         </div>
 
                         <div className="text-center px-2">
-                          {isCompleted ? (
+                          {isCompleted || isInvalid ? (
                             <div className="text-lg font-bold">
                               {teamScore} - {opponentScore}
                             </div>
@@ -536,10 +539,14 @@ const TeamProfile = () => {
                         </div>
                       </div>
 
-                      {isCompleted && (
+                      {(isCompleted || isInvalid) && (
                         <div className="text-center mt-2">
                           <span className="text-xs font-bold">
-                            {isWinner ? "✅ VICTORIA" : "❌ DERROTA"}
+                            {isInvalid
+                              ? "🚫 ANULADO"
+                              : isWinner
+                              ? "✅ VICTORIA"
+                              : "❌ DERROTA"}
                           </span>
                         </div>
                       )}

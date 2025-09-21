@@ -37,3 +37,20 @@ export const getTeamDivision = (teamName) => {
       return "Sin división";
   }
 };
+
+export const getGameStatus = (gameStatus) => {
+  switch (gameStatus) {
+    case "completed":
+      return "Completado";
+    case "pending":
+      return "Pendiente";
+    case "invalid":
+      return "Nulo";
+    case "in_progress":
+      return "En Progreso";
+    case "postponed":
+      return "Pospuesto";
+    default:
+      return "Pendiente";
+  }
+};

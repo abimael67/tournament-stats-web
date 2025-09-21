@@ -101,6 +101,7 @@ const GameDetails = () => {
       in_progress: "En Progreso",
       completed: "Completado",
       postponed: "Pospuesto",
+      invalid: "Anulado",
     };
     return statusMap[status] || status;
   };
@@ -111,6 +112,7 @@ const GameDetails = () => {
       in_progress: "bg-blue-100 text-blue-800",
       completed: "bg-green-100 text-green-800",
       postponed: "bg-red-100 text-red-800",
+      invalid: "bg-gray-100 text-gray-800 line-through",
     };
     return colorMap[status] || "bg-gray-100 text-gray-800";
   };
