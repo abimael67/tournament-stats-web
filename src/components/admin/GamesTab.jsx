@@ -16,6 +16,7 @@ const GamesTab = () => {
     team_a_id: "",
     team_b_id: "",
     place: "",
+    type: "regular",
     status: "pending",
     score_team_a: 0,
     score_team_b: 0,
@@ -36,6 +37,7 @@ const GamesTab = () => {
           id,
           date,
           status,
+          type,
           place,
           score_team_a,
           score_team_b,
@@ -84,6 +86,7 @@ const GamesTab = () => {
       team_a_id: "",
       team_b_id: "",
       status: "pending",
+      type: "regular",
       place: "",
       score_team_a: 0,
       score_team_b: 0,
@@ -100,6 +103,7 @@ const GamesTab = () => {
       team_a_id: game.team_a_id,
       team_b_id: game.team_b_id,
       status: game.status,
+      type: game.type,
       place: game.place,
       score_team_a: game.score_team_a || 0,
       score_team_b: game.score_team_b || 0,
@@ -160,6 +164,7 @@ const GamesTab = () => {
         team_a_id: formData.team_a_id,
         team_b_id: formData.team_b_id,
         status: formData.status,
+        type: formData.type,
         place: formData.place,
         score_team_a:
           formData.status === "completed" || formData.status === "in_progress"
@@ -194,6 +199,7 @@ const GamesTab = () => {
           id,
           date,
           status,
+          type,
           score_team_a,
           score_team_b,
           team_a_id,
@@ -395,6 +401,23 @@ const GamesTab = () => {
                     <option value="Techado Nani Marrero">
                       Techado Nani Marrero
                     </option>
+                  </select>
+                </div>
+                <div>
+                  {/* type could be regular, semi-final, final */}
+                  <label>Tipo</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Seleccionar tipo</option>
+                    <option value="regular">Regular</option>
+                    <option value="semi-final">Semifinal</option>
+                    <option value="final">Final</option>
                   </select>
                 </div>
                 <div>

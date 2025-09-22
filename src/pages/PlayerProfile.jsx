@@ -135,6 +135,7 @@ const PlayerProfile = () => {
             acc.totalPoints += stat.points || 0;
             acc.totalRebounds += stat.rebounds || 0;
             acc.totalAssists += stat.assists || 0;
+            acc.totalSteals += stat.steals || 0;
             acc.totalTechnicalFouls += stat.technical_fouls || 0;
             acc.totalFouls += stat.fouls || 0;
             acc.totalFieldGoalMade += stat.field_goal_made || 0;
@@ -150,6 +151,7 @@ const PlayerProfile = () => {
             totalPoints: 0,
             totalRebounds: 0,
             totalAssists: 0,
+            totalSteals: 0,
             totalTechnicalFouls: 0,
             totalFieldGoalMade: 0,
             totalFieldGoalAttempts: 0,
@@ -427,6 +429,12 @@ const PlayerProfile = () => {
                 {aggregatedStats.totalAssists}
               </div>
               <div className="text-sm text-gray-600">Asistencias Totales</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-800">
+                {aggregatedStats.totalSteals}
+              </div>
+              <div className="text-sm text-gray-600">Robos Totales</div>
             </div>
 
             <div className="text-center">

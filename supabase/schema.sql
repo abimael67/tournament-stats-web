@@ -30,6 +30,7 @@ CREATE TABLE games (
   team_a_id UUID REFERENCES teams(id) ON DELETE CASCADE,
   team_b_id UUID REFERENCES teams(id) ON DELETE CASCADE,
   status TEXT NOT NULL CHECK (status IN ('pending', 'in_progress', 'completed', 'postponed', 'invalid')),
+  type TEXT NOT NULL DEFAULT 'regular' CHECK (type IN ('regular', 'semi-final', 'final')),
   winner_team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
   score_team_a INTEGER,
   score_team_b INTEGER,

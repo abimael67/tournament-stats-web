@@ -7,7 +7,8 @@ const Lideres = () => {
   const [lideres, setLideres] = useState({
     puntos: { lider: null, finalistas: [] },
     rebotes: { lider: null, finalistas: [] },
-    asistencias: { lider: null, finalistas: [] }
+    asistencias: { lider: null, finalistas: [] },
+    robos: { lider: null, finalistas: [] },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,17 +20,20 @@ const Lideres = () => {
   const fetchLeadersData = async () => {
     try {
       setLoading(true);
-      
+
       // Obtener todos los jugadores con sus equipos
-       const { data: playersData, error: playersError } = await supabase
-         .from("members")
-         .select(`
+      const { data: playersData, error: playersError } = await supabase
+        .from("members")
+        .select(
+          `
            id,
            name,
            profile_pic_url,
            team:team_id(team_name)
-         `)
-         .eq("role", "player");
+         `
+        )
+        .eq("role", "player")
+        .eq("inactive", false);
 
       if (playersError) throw playersError;
 
@@ -41,13 +45,14 @@ const Lideres = () => {
 
       if (gamesError) throw gamesError;
 
-      const gameIds = gamesData?.map(game => game.id) || [];
+      const gameIds = gamesData?.map((game) => game.id) || [];
 
       if (gameIds.length === 0) {
         setLideres({
           puntos: { lider: null, finalistas: [] },
           rebotes: { lider: null, finalistas: [] },
-          asistencias: { lider: null, finalistas: [] }
+          asistencias: { lider: null, finalistas: [] },
+          robos: { lider: null, finalistas: [] },
         });
         return;
       }
@@ -55,121 +60,169 @@ const Lideres = () => {
       // Obtener todas las estadísticas
       const { data: statsData, error: statsError } = await supabase
         .from("stats")
-        .select(`
+        .select(
+          `
           member_id,
           points,
           rebounds,
-          assists
-        `)
+          assists,
+          steals
+        `
+        )
         .in("game_id", gameIds);
-
       if (statsError) throw statsError;
 
       // Calcular estadísticas agregadas por jugador
       const playerStats = {};
-      
-      statsData?.forEach(stat => {
+
+      statsData?.forEach((stat) => {
         if (!playerStats[stat.member_id]) {
           playerStats[stat.member_id] = {
             totalPoints: 0,
             totalRebounds: 0,
             totalAssists: 0,
-            gamesPlayed: 0
+            totalSteals: 0,
+            gamesPlayed: 0,
           };
         }
-        
+
         playerStats[stat.member_id].totalPoints += stat.points || 0;
         playerStats[stat.member_id].totalRebounds += stat.rebounds || 0;
         playerStats[stat.member_id].totalAssists += stat.assists || 0;
+        playerStats[stat.member_id].totalSteals += stat.steals || 0;
         playerStats[stat.member_id].gamesPlayed += 1;
       });
 
       // Crear array de jugadores con estadísticas
       const playersWithStats = playersData
-        .map(player => {
+        .map((player) => {
           const stats = playerStats[player.id];
           if (!stats || stats.gamesPlayed === 0) return null;
-          
+
           return {
-             id: player.id,
-             nombre: player.name,
-             equipo: player.team?.team_name || "Sin equipo",
-             foto: player.profile_pic_url,
-             puntosPromedio: (stats.totalPoints / stats.gamesPlayed).toFixed(1),
-             rebotesPromedio: (stats.totalRebounds / stats.gamesPlayed).toFixed(1),
-             asistenciasPromedio: (stats.totalAssists / stats.gamesPlayed).toFixed(1),
-             totalPoints: stats.totalPoints,
-             totalRebounds: stats.totalRebounds,
-             totalAssists: stats.totalAssists,
-             gamesPlayed: stats.gamesPlayed
-           };
+            id: player.id,
+            nombre: player.name,
+            equipo: player.team?.team_name || "Sin equipo",
+            foto: player.profile_pic_url,
+            puntosPromedio: (stats.totalPoints / stats.gamesPlayed).toFixed(1),
+            rebotesPromedio: (stats.totalRebounds / stats.gamesPlayed).toFixed(
+              1
+            ),
+            asistenciasPromedio: (
+              stats.totalAssists / stats.gamesPlayed
+            ).toFixed(1),
+            robosPromedio: (stats.totalSteals / stats.gamesPlayed).toFixed(1),
+            totalPoints: stats.totalPoints,
+            totalRebounds: stats.totalRebounds,
+            totalAssists: stats.totalAssists,
+            totalSteals: stats.totalSteals,
+            gamesPlayed: stats.gamesPlayed,
+          };
         })
-        .filter(player => player !== null);
+        .filter((player) => player !== null);
 
       // Calcular líderes por categoría
       const puntosLeaders = [...playersWithStats]
-        .sort((a, b) => parseFloat(b.puntosPromedio) - parseFloat(a.puntosPromedio))
+        .sort(
+          (a, b) => parseFloat(b.puntosPromedio) - parseFloat(a.puntosPromedio)
+        )
         .slice(0, 4);
-      
+
       const rebotesLeaders = [...playersWithStats]
-        .sort((a, b) => parseFloat(b.rebotesPromedio) - parseFloat(a.rebotesPromedio))
+        .sort(
+          (a, b) =>
+            parseFloat(b.rebotesPromedio) - parseFloat(a.rebotesPromedio)
+        )
         .slice(0, 4);
-      
+
       const asistenciasLeaders = [...playersWithStats]
-        .sort((a, b) => parseFloat(b.asistenciasPromedio) - parseFloat(a.asistenciasPromedio))
+        .sort(
+          (a, b) =>
+            parseFloat(b.asistenciasPromedio) -
+            parseFloat(a.asistenciasPromedio)
+        )
+        .slice(0, 4);
+
+      const robosLeaders = [...playersWithStats]
+        .sort(
+          (a, b) => parseFloat(b.robosPromedio) - parseFloat(a.robosPromedio)
+        )
         .slice(0, 4);
 
       setLideres({
         puntos: {
-           lider: puntosLeaders[0] ? {
-             id: puntosLeaders[0].id,
-             nombre: puntosLeaders[0].nombre,
-             equipo: puntosLeaders[0].equipo,
-             valor: puntosLeaders[0].puntosPromedio,
-             foto: puntosLeaders[0].foto
-           } : null,
-           finalistas: puntosLeaders.slice(1, 4).map(player => ({
-             id: player.id,
-             nombre: player.nombre,
-             equipo: player.equipo,
-             valor: player.puntosPromedio,
-             foto: player.foto
-           }))
-         },
+          lider: puntosLeaders[0]
+            ? {
+                id: puntosLeaders[0].id,
+                nombre: puntosLeaders[0].nombre,
+                equipo: puntosLeaders[0].equipo,
+                valor: puntosLeaders[0].puntosPromedio,
+                foto: puntosLeaders[0].foto,
+              }
+            : null,
+          finalistas: puntosLeaders.slice(1, 4).map((player) => ({
+            id: player.id,
+            nombre: player.nombre,
+            equipo: player.equipo,
+            valor: player.puntosPromedio,
+            foto: player.foto,
+          })),
+        },
         rebotes: {
-           lider: rebotesLeaders[0] ? {
-             id: rebotesLeaders[0].id,
-             nombre: rebotesLeaders[0].nombre,
-             equipo: rebotesLeaders[0].equipo,
-             valor: rebotesLeaders[0].rebotesPromedio,
-             foto: rebotesLeaders[0].foto
-           } : null,
-           finalistas: rebotesLeaders.slice(1, 4).map(player => ({
-             id: player.id,
-             nombre: player.nombre,
-             equipo: player.equipo,
-             valor: player.rebotesPromedio,
-             foto: player.foto
-           }))
-         },
+          lider: rebotesLeaders[0]
+            ? {
+                id: rebotesLeaders[0].id,
+                nombre: rebotesLeaders[0].nombre,
+                equipo: rebotesLeaders[0].equipo,
+                valor: rebotesLeaders[0].rebotesPromedio,
+                foto: rebotesLeaders[0].foto,
+              }
+            : null,
+          finalistas: rebotesLeaders.slice(1, 4).map((player) => ({
+            id: player.id,
+            nombre: player.nombre,
+            equipo: player.equipo,
+            valor: player.rebotesPromedio,
+            foto: player.foto,
+          })),
+        },
         asistencias: {
-           lider: asistenciasLeaders[0] ? {
-             id: asistenciasLeaders[0].id,
-             nombre: asistenciasLeaders[0].nombre,
-             equipo: asistenciasLeaders[0].equipo,
-             valor: asistenciasLeaders[0].asistenciasPromedio,
-             foto: asistenciasLeaders[0].foto
-           } : null,
-           finalistas: asistenciasLeaders.slice(1, 4).map(player => ({
-             id: player.id,
-             nombre: player.nombre,
-             equipo: player.equipo,
-             valor: player.asistenciasPromedio,
-             foto: player.foto
-           }))
-         }
+          lider: asistenciasLeaders[0]
+            ? {
+                id: asistenciasLeaders[0].id,
+                nombre: asistenciasLeaders[0].nombre,
+                equipo: asistenciasLeaders[0].equipo,
+                valor: asistenciasLeaders[0].asistenciasPromedio,
+                foto: asistenciasLeaders[0].foto,
+              }
+            : null,
+          finalistas: asistenciasLeaders.slice(1, 4).map((player) => ({
+            id: player.id,
+            nombre: player.nombre,
+            equipo: player.equipo,
+            valor: player.asistenciasPromedio,
+            foto: player.foto,
+          })),
+        },
+        robos: {
+          lider: robosLeaders[0]
+            ? {
+                id: robosLeaders[0].id,
+                nombre: robosLeaders[0].nombre,
+                equipo: robosLeaders[0].equipo,
+                valor: robosLeaders[0].robosPromedio,
+                foto: robosLeaders[0].foto,
+              }
+            : null,
+          finalistas: robosLeaders.slice(1, 4).map((player) => ({
+            id: player.id,
+            nombre: player.nombre,
+            equipo: player.equipo,
+            valor: player.robosPromedio,
+            foto: player.foto,
+          })),
+        },
       });
-      
     } catch (err) {
       console.error("Error fetching leaders data:", err);
       setError(err.message);
@@ -180,14 +233,18 @@ const Lideres = () => {
 
   const getInitials = (name) => {
     return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
-  const PlayerAvatar = ({ player, size = "w-20 h-20", textSize = "text-2xl" }) => {
+  const PlayerAvatar = ({
+    player,
+    size = "w-20 h-20",
+    textSize = "text-2xl",
+  }) => {
     if (player.foto) {
       return (
         <img
@@ -197,9 +254,11 @@ const Lideres = () => {
         />
       );
     }
-    
+
     return (
-      <div className={`${size} bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white shadow-lg`}>
+      <div
+        className={`${size} bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white shadow-lg`}
+      >
         <span className={`${textSize} font-bold text-white`}>
           {getInitials(player.nombre)}
         </span>
@@ -212,7 +271,7 @@ const Lideres = () => {
       <div className="text-center mb-6">
         <h3 className="text-2xl font-bold text-gray-800">{titulo}</h3>
       </div>
-      
+
       {/* Líder Principal */}
       {lider ? (
         <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-6 mb-6 border-2 border-yellow-200">
@@ -223,7 +282,7 @@ const Lideres = () => {
             </div>
           </div>
           <div className="text-center">
-            <h4 
+            <h4
               className="text-xl font-bold text-gray-800 mb-1 cursor-pointer hover:text-blue-600 transition-colors duration-200"
               onClick={() => navigate(`/jugador/${lider.id}`)}
             >
@@ -231,7 +290,8 @@ const Lideres = () => {
             </h4>
             <p className="text-amber-600 font-semibold mb-2">{lider.equipo}</p>
             <div className="text-3xl font-bold text-amber-700">
-              {lider.valor}{unidad}
+              {lider.valor}
+              {unidad}
             </div>
           </div>
         </div>
@@ -243,22 +303,33 @@ const Lideres = () => {
           </div>
         </div>
       )}
-      
+
       {/* Finalistas */}
       {finalistas && finalistas.length > 0 && (
         <div className="space-y-3">
-          <h5 className="text-lg font-semibold text-gray-700 text-center mb-4">Finalistas</h5>
+          <h5 className="text-lg font-semibold text-gray-700 text-center mb-4">
+            Finalistas
+          </h5>
           {finalistas.map((finalista, index) => (
-            <div key={index} className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+            <div
+              key={index}
+              className="bg-gray-50 rounded-lg p-4 flex items-center justify-between"
+            >
               <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <PlayerAvatar player={finalista} size="w-12 h-12" textSize="text-sm" />
+                  <PlayerAvatar
+                    player={finalista}
+                    size="w-12 h-12"
+                    textSize="text-sm"
+                  />
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center border-2 border-white">
-                    <span className="text-xs font-bold text-white">{index + 2}</span>
+                    <span className="text-xs font-bold text-white">
+                      {index + 2}
+                    </span>
                   </div>
                 </div>
                 <div>
-                  <p 
+                  <p
                     className="font-semibold text-gray-800 cursor-pointer hover:text-blue-600 transition-colors duration-200"
                     onClick={() => navigate(`/jugador/${finalista.id}`)}
                   >
@@ -268,7 +339,8 @@ const Lideres = () => {
                 </div>
               </div>
               <div className="text-lg font-bold text-gray-700">
-                {finalista.valor}{unidad}
+                {finalista.valor}
+                {unidad}
               </div>
             </div>
           ))}
@@ -304,7 +376,9 @@ const Lideres = () => {
             <div className="flex items-center">
               <div className="text-red-500 text-xl mr-3">⚠️</div>
               <div>
-                <h3 className="text-red-800 font-semibold">Error al cargar datos</h3>
+                <h3 className="text-red-800 font-semibold">
+                  Error al cargar datos
+                </h3>
                 <p className="text-red-600">{error}</p>
               </div>
             </div>
@@ -313,43 +387,42 @@ const Lideres = () => {
 
         {/* Grid de Líderes */}
         {!loading && !error && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
-            <LeaderCard 
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-12">
+            <LeaderCard
               titulo="Puntos por Juego"
               lider={lideres.puntos.lider}
               finalistas={lideres.puntos.finalistas}
               unidad=" pts"
             />
-            
-            <LeaderCard 
+
+            <LeaderCard
               titulo="Rebotes por Juego"
               lider={lideres.rebotes.lider}
               finalistas={lideres.rebotes.finalistas}
               unidad=" reb"
             />
-            
-            <LeaderCard 
+
+            <LeaderCard
               titulo="Asistencias por Juego"
               lider={lideres.asistencias.lider}
               finalistas={lideres.asistencias.finalistas}
               unidad=" ast"
+            />
+
+            <LeaderCard
+              titulo="Robos por Juego"
+              lider={lideres.robos.lider}
+              finalistas={lideres.robos.finalistas}
+              unidad=" rbs"
             />
           </div>
         )}
 
         {/* Sección de MVPs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <LeaderCard 
-            titulo="MVP del Torneo"
-            lider={null}
-            finalistas={null}
-          />
-          
-          <LeaderCard 
-            titulo="MVP de la Final"
-            lider={null}
-            finalistas={null}
-          />
+          <LeaderCard titulo="MVP del Torneo" lider={null} finalistas={null} />
+
+          <LeaderCard titulo="MVP de la Final" lider={null} finalistas={null} />
         </div>
 
         {/* Footer */}
