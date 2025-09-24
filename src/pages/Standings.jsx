@@ -36,7 +36,7 @@ const Standings = () => {
         const { data: semiGames, error: semiGamesError } = await supabase
           .from("games")
           .select(
-            "id, team_a_id, team_b_id, winner_team_id, score_team_a, score_team_b, status, date, team_a:team_a_id(team_name, logo_url), team_b:team_b_id(team_name, logo_url)"
+            "id, team_a_id, team_b_id, winner_team_id, score_team_a, place, score_team_b, status, date, team_a:team_a_id(team_name, logo_url), team_b:team_b_id(team_name, logo_url)"
           )
           .eq("type", "semi-final")
           .order("date", { ascending: true });
@@ -208,6 +208,7 @@ const Standings = () => {
                                 className="font-medium"
                               >
                                 Juego {index + 1}
+                                {index === 2 && "*"}
                               </a>
                               <span
                                 className={`px-2 py-1 rounded text-xs ${
@@ -222,16 +223,15 @@ const Standings = () => {
                                   ? "✓"
                                   : game.status === "in_progress"
                                   ? "⏳"
-                                  : new Date(game.date).toLocaleTimeString(
-                                      "es-ES",
-                                      {
-                                        hour12: true,
-                                        day: "2-digit",
-                                        month: "2-digit",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      }
-                                    )}
+                                  : `${game.place} @ ${new Date(
+                                      game.date
+                                    ).toLocaleTimeString("es-ES", {
+                                      hour12: true,
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}`}
                               </span>
                               {game.status === "completed" && (
                                 <span className="font-bold text-blue-600">
@@ -367,6 +367,7 @@ const Standings = () => {
                                 className="font-medium"
                               >
                                 Juego {index + 1}
+                                {index === 2 && "*"}
                               </a>
                               <span
                                 className={`px-2 py-1 rounded text-xs ${
@@ -381,16 +382,15 @@ const Standings = () => {
                                   ? "✓"
                                   : game.status === "in_progress"
                                   ? "⏳"
-                                  : new Date(game.date).toLocaleString(
-                                      "es-ES",
-                                      {
-                                        hour12: true,
-                                        day: "2-digit",
-                                        month: "2-digit",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      }
-                                    )}
+                                  : `${game.place} @ ${new Date(
+                                      game.date
+                                    ).toLocaleString("es-ES", {
+                                      hour12: true,
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}`}
                               </span>
                               {game.status === "completed" && (
                                 <span className="font-bold text-blue-600">
@@ -444,6 +444,9 @@ const Standings = () => {
                 <div className="text-gray-600">Mejor de 3 partidos</div>
                 <div className="text-xs text-gray-500">
                   Top 2 de cada división
+                </div>
+                <div className="text-xs text-gray-500">
+                  * Si fuese necesario
                 </div>
               </div>
               <div className="bg-white rounded p-3 border">

@@ -398,9 +398,7 @@ const GamesTab = () => {
                     <option value="">Seleccionar lugar</option>
                     <option value="Techado del INVI">Techado del INVI</option>
                     <option value="Club G.U.G.">Club G.U.G.</option>
-                    <option value="Techado Nani Marrero">
-                      Techado Nani Marrero
-                    </option>
+                    <option value="Plaza Valerio">Plaza Valerio</option>
                   </select>
                 </div>
                 <div>
