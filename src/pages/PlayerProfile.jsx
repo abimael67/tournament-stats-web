@@ -8,6 +8,7 @@ const PlayerProfile = () => {
   const [player, setPlayer] = useState(null);
   const [playerStats, setPlayerStats] = useState([]);
   const [aggregatedStats, setAggregatedStats] = useState(null);
+  const [postSeasonStats, setPostSeasonStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -50,6 +51,7 @@ const PlayerProfile = () => {
 
       // Obtener estadísticas del jugador
       await fetchPlayerStatistics();
+      await fetchPostSeasonStatistics();
     } catch (error) {
       console.error("Error fetching player data:", error);
       setError("Error al cargar los datos del jugador");
@@ -63,8 +65,9 @@ const PlayerProfile = () => {
       // Primero obtener los IDs de juegos completados o en progreso
       const { data: gamesData, error: gamesError } = await supabase
         .from("games")
-        .select("id")
+        .select("id, type")
         .in("status", ["completed", "in_progress"]);
+      //.eq("type", "regular");
 
       if (gamesError) throw gamesError;
 
@@ -116,7 +119,8 @@ const PlayerProfile = () => {
             team_b:team_b_id(id, team_name),
             score_team_a,
             score_team_b,
-            winner_team_id
+            winner_team_id,
+            type
           )
         `
         )
@@ -128,6 +132,146 @@ const PlayerProfile = () => {
       setPlayerStats(statsData || []);
 
       // Calcular estadísticas agregadas
+      if (statsData && statsData.length > 0) {
+        const aggregated = statsData
+          .filter((stat) => stat.game.type === "regular")
+          .reduce(
+            (acc, stat) => {
+              acc.totalGames += 1;
+              acc.totalPoints += stat.points || 0;
+              acc.totalRebounds += stat.rebounds || 0;
+              acc.totalAssists += stat.assists || 0;
+              acc.totalSteals += stat.steals || 0;
+              acc.totalTechnicalFouls += stat.technical_fouls || 0;
+              acc.totalFouls += stat.fouls || 0;
+              acc.totalFieldGoalMade += stat.field_goal_made || 0;
+              acc.totalFieldGoalAttempts += stat.field_goal_attempts || 0;
+              acc.totalThreePointMade += stat.three_point_made || 0;
+              acc.totalThreePointAttempts += stat.three_point_attempts || 0;
+              acc.totalFreeThrowMade += stat.free_throw_made || 0;
+              acc.totalFreeThrowAttempts += stat.free_throw_attempts || 0;
+              return acc;
+            },
+            {
+              totalGames: 0,
+              totalPoints: 0,
+              totalRebounds: 0,
+              totalAssists: 0,
+              totalSteals: 0,
+              totalTechnicalFouls: 0,
+              totalFieldGoalMade: 0,
+              totalFieldGoalAttempts: 0,
+              totalThreePointMade: 0,
+              totalThreePointAttempts: 0,
+              totalFreeThrowMade: 0,
+              totalFreeThrowAttempts: 0,
+              totalFouls: 0,
+            }
+          );
+
+        // Calcular promedios y porcentajes
+        aggregated.avgPoints =
+          aggregated.totalGames > 0
+            ? (aggregated.totalPoints / aggregated.totalGames).toFixed(1)
+            : 0;
+        aggregated.avgRebounds =
+          aggregated.totalGames > 0
+            ? (aggregated.totalRebounds / aggregated.totalGames).toFixed(1)
+            : 0;
+        aggregated.avgAssists =
+          aggregated.totalGames > 0
+            ? (aggregated.totalAssists / aggregated.totalGames).toFixed(1)
+            : 0;
+        aggregated.fieldGoalPercentage =
+          aggregated.totalFieldGoalAttempts > 0
+            ? (
+                (aggregated.totalFieldGoalMade /
+                  aggregated.totalFieldGoalAttempts) *
+                100
+              ).toFixed(1)
+            : 0;
+        aggregated.threePointPercentage =
+          aggregated.totalThreePointAttempts > 0
+            ? (
+                (aggregated.totalThreePointMade /
+                  aggregated.totalThreePointAttempts) *
+                100
+              ).toFixed(1)
+            : 0;
+        aggregated.freeThrowPercentage =
+          aggregated.totalFreeThrowAttempts > 0
+            ? (
+                (aggregated.totalFreeThrowMade /
+                  aggregated.totalFreeThrowAttempts) *
+                100
+              ).toFixed(1)
+            : 0;
+
+        setAggregatedStats(aggregated);
+      }
+    } catch (error) {
+      console.error("Error fetching player statistics:", error);
+    }
+  };
+
+  const fetchPostSeasonStatistics = async () => {
+    try {
+      // Obtener los IDs de juegos de post-temporada (semi-final y final)
+      const { data: gamesData, error: gamesError } = await supabase
+        .from("games")
+        .select("id")
+        .in("status", ["completed", "in_progress"])
+        .in("type", ["semi-final", "final"]);
+
+      if (gamesError) throw gamesError;
+
+      const gameIds = gamesData?.map((game) => game.id) || [];
+
+      if (gameIds.length === 0) {
+        setPostSeasonStats({
+          totalGames: 0,
+          totalPoints: 0,
+          totalRebounds: 0,
+          totalAssists: 0,
+          totalSteals: 0,
+          totalFouls: 0,
+          totalTechnicalFouls: 0,
+          fieldGoalPercentage: 0,
+          threePointPercentage: 0,
+          freeThrowPercentage: 0,
+          avgPoints: 0,
+          avgRebounds: 0,
+          avgAssists: 0,
+        });
+        return;
+      }
+
+      // Obtener estadísticas del jugador para juegos de post-temporada
+      const { data: statsData, error: statsError } = await supabase
+        .from("stats")
+        .select(
+          `
+          id,
+          points,
+          rebounds,
+          assists,
+          technical_fouls,
+          fouls,
+          steals,
+          field_goal_made,
+          field_goal_attempts,
+          three_point_made,
+          three_point_attempts,
+          free_throw_made,
+          free_throw_attempts
+        `
+        )
+        .eq("member_id", id)
+        .in("game_id", gameIds);
+
+      if (statsError) throw statsError;
+
+      // Calcular estadísticas agregadas de post-temporada
       if (statsData && statsData.length > 0) {
         const aggregated = statsData.reduce(
           (acc, stat) => {
@@ -201,10 +345,26 @@ const PlayerProfile = () => {
               ).toFixed(1)
             : 0;
 
-        setAggregatedStats(aggregated);
+        setPostSeasonStats(aggregated);
+      } else {
+        setPostSeasonStats({
+          totalGames: 0,
+          totalPoints: 0,
+          totalRebounds: 0,
+          totalAssists: 0,
+          totalSteals: 0,
+          totalFouls: 0,
+          totalTechnicalFouls: 0,
+          fieldGoalPercentage: 0,
+          threePointPercentage: 0,
+          freeThrowPercentage: 0,
+          avgPoints: 0,
+          avgRebounds: 0,
+          avgAssists: 0,
+        });
       }
     } catch (error) {
-      console.error("Error fetching player statistics:", error);
+      console.error("Error fetching post-season statistics:", error);
     }
   };
 
@@ -361,7 +521,7 @@ const PlayerProfile = () => {
       {aggregatedStats && (
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-2xl font-bold text-blue-800 mb-6">
-            Estadísticas de la Temporada
+            Estadísticas de la Temporada Regular
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
@@ -447,6 +607,96 @@ const PlayerProfile = () => {
         </div>
       )}
 
+      {/* Estadísticas de Post-Temporada */}
+      {postSeasonStats && postSeasonStats.totalGames > 0 && (
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-bold text-purple-800 mb-6">
+            Estadísticas de Post-Temporada
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+            <div className="bg-purple-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-800">
+                {postSeasonStats.totalGames}
+              </div>
+              <div className="text-sm text-gray-600">Partidos</div>
+            </div>
+
+            <div className="bg-green-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-800">
+                {postSeasonStats.avgPoints}
+              </div>
+              <div className="text-sm text-gray-600">Pts/Partido</div>
+            </div>
+
+            <div className="bg-blue-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-800">
+                {postSeasonStats.avgRebounds}
+              </div>
+              <div className="text-sm text-gray-600">Reb/Partido</div>
+            </div>
+
+            <div className="bg-yellow-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-800">
+                {postSeasonStats.avgAssists}
+              </div>
+              <div className="text-sm text-gray-600">Ast/Partido</div>
+            </div>
+
+            <div className="bg-red-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-red-800">
+                {postSeasonStats.fieldGoalPercentage}%
+              </div>
+              <div className="text-sm text-gray-600">% Tiros Campo</div>
+            </div>
+
+            <div className="bg-indigo-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-indigo-800">
+                {postSeasonStats.threePointPercentage}%
+              </div>
+              <div className="text-sm text-gray-600">% Triples</div>
+            </div>
+          </div>
+
+          {/* Estadísticas totales de post-temporada */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-800">
+                {postSeasonStats.totalPoints}
+              </div>
+              <div className="text-sm text-gray-600">Puntos Totales</div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-800">
+                {postSeasonStats.totalRebounds}
+              </div>
+              <div className="text-sm text-gray-600">Rebotes Totales</div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-800">
+                {postSeasonStats.totalAssists}
+              </div>
+              <div className="text-sm text-gray-600">Asistencias Totales</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-800">
+                {postSeasonStats.totalSteals}
+              </div>
+              <div className="text-sm text-gray-600">Robos Totales</div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-800">
+                {postSeasonStats.freeThrowPercentage}%
+              </div>
+              <div className="text-sm text-gray-600">% Tiros Libres</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Historial de partidos */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold text-blue-800 mb-6">
@@ -490,6 +740,9 @@ const PlayerProfile = () => {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     TL
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rob
                   </th>
                 </tr>
               </thead>
@@ -548,6 +801,9 @@ const PlayerProfile = () => {
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                         {stat.free_throw_made || 0}/
                         {stat.free_throw_attempts || 0}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {stat.steals || 0}
                       </td>
                     </tr>
                   );

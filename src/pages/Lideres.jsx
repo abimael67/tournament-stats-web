@@ -359,7 +359,8 @@ const Lideres = () => {
             🏆 Líderes del Torneo
           </h1>
           <p className="text-xl text-gray-600">
-            Los mejores jugadores en cada categoría estadística
+            Los mejores jugadores en cada categoría estadística en la temporada
+            regular
           </p>
         </div>
 
@@ -414,7 +415,7 @@ const Lideres = () => {
               titulo="Robos por Juego"
               lider={lideres.robos.lider}
               finalistas={lideres.robos.finalistas}
-              unidad=" rbs"
+              unidad=" robs"
             />
           </div>
         )}
