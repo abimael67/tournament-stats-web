@@ -41,7 +41,8 @@ const Lideres = () => {
       const { data: gamesData, error: gamesError } = await supabase
         .from("games")
         .select("id")
-        .eq("status", "completed");
+        .eq("status", "completed")
+        .eq("type", "regular");
 
       if (gamesError) throw gamesError;
 
