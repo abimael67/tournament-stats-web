@@ -124,6 +124,18 @@ const Standings = () => {
       return game.winner_team_id === teamId;
     }).length;
   };
+
+  const sf1Team1 = divisionA[0];
+  const sf1Team2 = divisionB[1];
+  const sf1Wins1 = getSemiFinalsWinsByTeam(sf1Team1?.id);
+  const sf1Wins2 = getSemiFinalsWinsByTeam(sf1Team2?.id);
+  const sf1Winner = sf1Wins1 >= 2 ? sf1Team1 : sf1Wins2 >= 2 ? sf1Team2 : null;
+
+  const sf2Team1 = divisionB[0];
+  const sf2Team2 = divisionA[1];
+  const sf2Wins1 = getSemiFinalsWinsByTeam(sf2Team1?.id);
+  const sf2Wins2 = getSemiFinalsWinsByTeam(sf2Team2?.id);
+  const sf2Winner = sf2Wins1 >= 2 ? sf2Team1 : sf2Wins2 >= 2 ? sf2Team2 : null;
   // Obtener los tres primeros equipos para el podio (general)
 
   return (
@@ -270,17 +282,39 @@ const Standings = () => {
                   </div>
                   <div className="flex justify-center items-center space-x-6 mb-2">
                     <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center border-2 border-gray-300">
-                      <span className="text-xs font-bold text-gray-600">
-                        SF1
-                      </span>
+                      {sf1Winner ? (
+                        <img
+                          src={sf1Winner.logo_url || "/default-team-logo.png"}
+                          alt={sf1Winner.team_name}
+                          className="w-16 h-16 rounded-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/default-team-logo.png";
+                          }}
+                        />
+                      ) : (
+                        <span className="text-xs font-bold text-gray-600">
+                          SF1
+                        </span>
+                      )}
                     </div>
                     <span className="text-lg font-bold text-yellow-700">
                       VS
                     </span>
                     <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center border-2 border-gray-300">
-                      <span className="text-xs font-bold text-gray-600">
-                        SF2
-                      </span>
+                      {sf2Winner ? (
+                        <img
+                          src={sf2Winner.logo_url || "/default-team-logo.png"}
+                          alt={sf2Winner.team_name}
+                          className="w-16 h-16 rounded-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/default-team-logo.png";
+                          }}
+                        />
+                      ) : (
+                        <span className="text-xs font-bold text-gray-600">
+                          SF2
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="text-xs text-gray-500">
