@@ -6,6 +6,7 @@ import { getTeamDivision } from "../utils";
 const Standings = () => {
   const [standings, setStandings] = useState([]);
   const [semiFinalsGames, setSemiFinalsGames] = useState([]);
+  const [finalGames, setFinalGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -44,6 +45,19 @@ const Standings = () => {
         if (semiGamesError) throw semiGamesError;
 
         setSemiFinalsGames(semiGames || []);
+        
+        // Obtener partidos de la final
+        const { data: finalGamesData, error: finalGamesError } = await supabase
+          .from("games")
+          .select(
+            "id, team_a_id, team_b_id, winner_team_id, score_team_a, place, score_team_b, status, date, team_a:team_a_id(team_name, logo_url), team_b:team_b_id(team_name, logo_url)"
+          )
+          .eq("type", "final")
+          .order("date", { ascending: true });
+
+        if (finalGamesError) throw finalGamesError;
+
+        setFinalGames(finalGamesData || []);
 
         // Calcular estadísticas para cada equipo
         const teamStats = teams.map((team) => {
@@ -320,6 +334,61 @@ const Standings = () => {
                   <div className="text-xs text-gray-500">
                     Mejor de 3 partidos
                   </div>
+                  
+                  {/* Final Games */}
+                  <div className="space-y-2 mt-3">
+                    {finalGames.length > 0 ? (
+                      finalGames.map((game, index) => (
+                        <div
+                          key={game.id}
+                          className="bg-white rounded p-2 border border-yellow-200"
+                        >
+                          <div className="flex justify-between items-center text-xs">
+                            <a
+                              href={`/partido/${game.id}`}
+                              className="font-medium"
+                            >
+                              Juego {index + 1}
+                              {index === 2 && "*"}
+                            </a>
+                            <span
+                              className={`px-2 py-1 rounded text-xs ${
+                                game.status === "completed"
+                                  ? "bg-green-100 text-green-700"
+                                  : game.status === "in_progress"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {game.status === "completed"
+                                ? "✓"
+                                : game.status === "in_progress"
+                                ? "⏳"
+                                : `${game.place} @ ${new Date(
+                                    game.date
+                                  ).toLocaleTimeString("es-ES", {
+                                    hour12: true,
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}`}
+                            </span>
+                            {game.status === "completed" && (
+                              <span className="font-bold text-yellow-600">
+                                {game.score_team_a} - {game.score_team_b}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-gray-500 py-2 text-sm">
+                        Por programar
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="mt-3 p-2 bg-yellow-50 rounded border">
                     <div className="text-xs text-yellow-700 font-medium">
                       🏆 Campeón del Torneo
